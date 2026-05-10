@@ -122,14 +122,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   }
 
   // ── Increment discount usage ───────────────────────────────────────────────
-  if (discountCents > 0 && session.discounts && session.discounts.length > 0) {
-    const promoCode = (session.discounts[0] as { coupon?: { name?: string } })?.coupon?.name;
-    if (promoCode) {
-      await db
-        .update(discounts)
-        .set({ usesCount: sql`${discounts.usesCount} + 1` })
-        .where(eq(discounts.code, promoCode.toUpperCase()));
-    }
+  const discountCode = session.metadata?.discountCode;
+  if (discountCode) {
+    await db
+      .update(discounts)
+      .set({ usesCount: sql`${discounts.usesCount} + 1` })
+      .where(eq(discounts.code, discountCode));
   }
 
   // ── Clean up cart items ───────────────────────────────────────────────────

@@ -71,6 +71,7 @@ export async function createCheckoutSession(
   // ── 4. Validate promo code (optional) ──────────────────────────────────────
   let discountCents = 0;
   let discountCode: string | undefined;
+  let freeShipping = false;
 
   if (promoCode?.trim()) {
     const code = promoCode.trim().toUpperCase();
@@ -96,6 +97,8 @@ export async function createCheckoutSession(
       discountCents = Math.floor((subtotalCents * discount.value) / 100);
     } else if (discount.type === "fixed") {
       discountCents = Math.min(discount.value, subtotalCents);
+    } else if (discount.type === "free_shipping") {
+      freeShipping = true;
     }
   }
 
@@ -169,7 +172,7 @@ export async function createCheckoutSession(
   }
 
   const shippingCents =
-    discountedSubtotal >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : STANDARD_SHIPPING_CENTS;
+    freeShipping || discountedSubtotal >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : STANDARD_SHIPPING_CENTS;
 
   // ── 8. Create Stripe Checkout session ─────────────────────────────────────
   const session = await stripe.checkout.sessions.create({
@@ -195,6 +198,7 @@ export async function createCheckoutSession(
     metadata: {
       cartId,
       userId: user?.id ?? "",
+      discountCode: discountCode ?? "",
     },
   });
 
