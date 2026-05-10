@@ -1,7 +1,52 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+// Simple rate limiter: max attempts per window per IP per route
+// In serverless this resets per cold-start. For production hardening add Upstash Redis.
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+const RATE_LIMITS: Record<string, { max: number; windowMs: number }> = {
+  "/login": { max: 10, windowMs: 60_000 },
+  "/register": { max: 5, windowMs: 60_000 },
+  "/forgot-password": { max: 5, windowMs: 60_000 },
+  "/api/webhooks": { max: 100, windowMs: 60_000 },
+};
+
+function checkRateLimit(ip: string, pathname: string): boolean {
+  const matchedRoute = Object.keys(RATE_LIMITS).find((r) => pathname.startsWith(r));
+  if (!matchedRoute) return false;
+
+  const { max, windowMs } = RATE_LIMITS[matchedRoute]!;
+  const key = `${ip}:${matchedRoute}`;
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + windowMs });
+    return false;
+  }
+
+  entry.count += 1;
+  if (entry.count > max) return true;
+  return false;
+}
+
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Rate limiting — check before hitting Supabase
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    request.headers.get("x-real-ip") ??
+    "unknown";
+
+  if (checkRateLimit(ip, pathname)) {
+    return new NextResponse("Too many requests", {
+      status: 429,
+      headers: { "Retry-After": "60" },
+    });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -29,8 +74,6 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
 
   // Redirect unauthenticated users away from protected routes
   const protectedPrefixes = ["/account", "/checkout"];

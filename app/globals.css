@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 /* ── Brand color tokens (HSL channels — consumed by @theme below) ─────── */
-:root {
+:root,
+[data-theme="light"] {
   --background: 24 35% 97%;
   --foreground: 20 14% 12%;
   --primary: 20 14% 12%;
@@ -20,11 +21,35 @@
   --radius: 0rem;
 }
 
+[data-theme="dark"] {
+  --background: 20 14% 8%;
+  --foreground: 24 20% 92%;
+  --primary: 24 20% 92%;
+  --primary-foreground: 20 14% 8%;
+  --secondary: 20 12% 13%;
+  --secondary-foreground: 24 20% 92%;
+  --accent: 350 30% 58%;
+  --accent-foreground: 24 20% 92%;
+  --muted: 20 10% 17%;
+  --muted-foreground: 20 8% 52%;
+  --border: 20 10% 22%;
+  --input: 20 10% 22%;
+  --ring: 350 30% 52%;
+  --destructive: 0 65% 45%;
+  --destructive-foreground: 0 0% 98%;
+  --radius: 0rem;
+}
+
+[data-theme="dark"] #splash {
+  background: hsl(20 14% 8%);
+}
+
 /* ── Tailwind theme mapping ───────────────────────────────────────────── */
 @theme inline {
   /* Fonts — actual font values set via CSS vars in root layout */
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-heading), ui-serif, Georgia, serif;
+  --font-display: var(--font-display), ui-sans-serif, sans-serif;
 
   /* Colors */
   --color-background: hsl(var(--background));
@@ -63,12 +88,98 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Splash screen (rendered before React hydrates) ──────────────────── */
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: hsl(var(--background));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  pointer-events: none;
+}
+
+#splash span {
+  font-family: var(--font-display), ui-sans-serif, sans-serif;
+  font-size: clamp(2.5rem, 8vw, 5.5rem);
+  font-weight: 200;
+  letter-spacing: 0.55em;
+  text-transform: lowercase;
+  color: hsl(var(--foreground));
+  opacity: 0;
+  animation: splash-reveal 1s 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+#splash::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 1px;
+  background: hsl(var(--foreground) / 0.25);
+  animation: splash-line 0.9s 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes splash-reveal {
+  0% {
+    opacity: 0;
+    letter-spacing: 0.15em;
+    transform: translateY(14px) scale(0.96);
+    filter: blur(10px);
+  }
+  55% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 0.55em;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes splash-line {
+  from { width: 0; }
+  to   { width: clamp(3rem, 10vw, 6rem); }
+}
+
+/* ── Hide scrollbar cross-browser ────────────────────────────────────── */
+.carousel-track::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Hero animations (CSS-based, no JS dependency) ───────────────────── */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anim-rise {
+  animation: rise 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 /* ── Reduced motion ───────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }

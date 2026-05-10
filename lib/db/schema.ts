@@ -258,6 +258,10 @@ export const productImages = pgTable("product_images", {
   alt: text("alt").notNull(),
   position: integer("position").default(0).notNull(),
   isPrimary: boolean("is_primary").default(false).notNull(),
+  mediaType: text("media_type")
+    .$type<"image" | "video">()
+    .default("image")
+    .notNull(),
 });
 
 export const productVariants = pgTable(
@@ -495,6 +499,7 @@ export type Product = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
 export type Tag = typeof tags.$inferSelect;
 export type NewTag = typeof tags.$inferInsert;
+export type ProductImage = typeof productImages.$inferSelect;
 export type ProductVariant = typeof productVariants.$inferSelect;
 export type NewProductVariant = typeof productVariants.$inferInsert;
 export type Cart = typeof carts.$inferSelect;
@@ -502,8 +507,43 @@ export type CartItem = typeof cartItems.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type NewOrder = typeof orders.$inferInsert;
 export type OrderItem = typeof orderItems.$inferSelect;
+export const bundles = pgTable("bundles", {
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  slug: text("slug").unique().notNull(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  coverImageUrl: text("cover_image_url"),
+  finalPriceCents: integer("final_price_cents").notNull(),
+  promoCode: text("promo_code"),
+  isActive: boolean("is_active").default(true).notNull(),
+  brandId: text("brand_id").default("arachchi").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const bundleProducts = pgTable(
+  "bundle_products",
+  {
+    bundleId: uuid("bundle_id")
+      .references(() => bundles.id, { onDelete: "cascade" })
+      .notNull(),
+    productId: uuid("product_id")
+      .references(() => products.id, { onDelete: "cascade" })
+      .notNull(),
+    position: integer("position").default(0).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.bundleId, t.productId] }),
+    index("bundle_products_bundle_id_idx").on(t.bundleId),
+  ],
+);
+
 export type Discount = typeof discounts.$inferSelect;
 export type Wishlist = typeof wishlists.$inferSelect;
+export type Bundle = typeof bundles.$inferSelect;
+export type BundleProduct = typeof bundleProducts.$inferSelect;
 export type JournalArticle = typeof journalArticles.$inferSelect;
 export type LookbookEntry = typeof lookbookEntries.$inferSelect;
 export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;

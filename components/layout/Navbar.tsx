@@ -1,59 +1,129 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { Menu } from "lucide-react";
+import { CartIcon } from "./CartIcon";
+import { ThemeToggle } from "./ThemeToggle";
+import { MobileMenu } from "./MobileMenu";
+import { SearchOverlay } from "./SearchOverlay";
 
 const navLinks = [
-  { label: "Shop", href: "/shop" },
+  { label: "Shop",     href: "/shop"     },
   { label: "Lookbook", href: "/lookbook" },
-  { label: "Journal", href: "/journal" },
-  { label: "About", href: "/about" },
+  { label: "Journal",  href: "/journal"  },
+  { label: "About",    href: "/about"    },
 ];
 
 export function Navbar() {
+  const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const isHome = pathname === "/";
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 40);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+  const transparent = isHome && !scrolled;
+
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-sm">
-      <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-6 lg:px-8">
-        {/* Wordmark */}
-        <Link
-          href="/"
-          className="font-serif text-lg tracking-[0.3em] uppercase text-foreground"
-          aria-label="Arachchi home"
-        >
-          Arachchi
-        </Link>
-
-        {/* Primary nav */}
-        <nav aria-label="Primary navigation">
-          <ul className="hidden items-center gap-8 md:flex">
-            {navLinks.map(({ label, href }) => (
-              <li key={href}>
-                <Link
-                  href={href}
-                  className="text-xs tracking-[0.2em] uppercase text-foreground/70 transition-colors duration-200 hover:text-foreground"
-                >
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* Utility links */}
-        <div className="flex items-center gap-5">
+    <>
+      <header
+        className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300 ${
+          transparent
+            ? "border-transparent bg-transparent"
+            : "border-border/60 bg-background/90 backdrop-blur-sm"
+        }`}
+      >
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-6 lg:px-8">
+          {/* Wordmark */}
           <Link
-            href="/account"
-            className="text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors duration-200 hover:text-foreground"
-            aria-label="Account"
+            href="/"
+            className={`font-display text-lg font-light tracking-[0.35em] transition-colors ${
+              transparent ? "text-foreground" : "text-foreground"
+            }`}
+            aria-label="Arachchi home"
           >
-            Account
+            arachchi
           </Link>
-          <Link
-            href="/cart"
-            className="text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors duration-200 hover:text-foreground"
-            aria-label="Cart"
-          >
-            Cart
-          </Link>
+
+          {/* Desktop nav */}
+          <nav aria-label="Primary navigation" className="hidden md:block">
+            <ul className="flex items-center gap-8">
+              {navLinks.map(({ label, href }) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className={`text-xs tracking-[0.2em] uppercase transition-colors duration-200 ${
+                      pathname.startsWith(href)
+                        ? "text-foreground"
+                        : "text-foreground/70 hover:text-foreground"
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Utility icons */}
+          <div className="flex items-center gap-4 sm:gap-5">
+            {/* Search */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search"
+              className="text-foreground/70 transition-colors hover:text-foreground"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+              </svg>
+            </button>
+
+            {/* Theme toggle — desktop only */}
+            <span className="hidden md:block">
+              <ThemeToggle />
+            </span>
+
+            {/* Account — desktop only */}
+            <Link
+              href="/account"
+              className="hidden text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground md:block"
+              aria-label="Account"
+            >
+              Account
+            </Link>
+
+            <CartIcon />
+
+            {/* Hamburger — mobile only */}
+            <button
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open menu"
+              className="text-foreground/70 transition-colors hover:text-foreground md:hidden"
+            >
+              <Menu size={20} />
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <MobileMenu
+        isOpen={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        onSearchOpen={() => setSearchOpen(true)}
+      />
+      <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+    </>
   );
 }

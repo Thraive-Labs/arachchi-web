@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Geist } from "next/font/google";
+import { Cormorant_Garamond, Geist, Nunito } from "next/font/google";
+import { SplashController } from "@/components/animations/SplashController";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 const heading = Cormorant_Garamond({
@@ -15,12 +17,19 @@ const body = Geist({
   display: "swap",
 });
 
+const display = Nunito({
+  variable: "--font-display",
+  weight: ["200", "300", "400"],
+  subsets: ["latin"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
-    default: "Arachchi",
-    template: "%s | Arachchi",
+    default: "Arachchi — Toronto Luxury Clothing",
+    template: "%s — Arachchi",
   },
-  description: "Toronto-based luxury clothing — designed with intention.",
+  description: "Toronto-based luxury clothing — designed with intention, built to last.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   ),
@@ -29,12 +38,39 @@ export const metadata: Metadata = {
     locale: "en_CA",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    site: "@arachchi",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "hsl(24 35% 97%)",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "hsl(24 35% 97%)" },
+    { media: "(prefers-color-scheme: dark)",  color: "hsl(20 14% 8%)" },
+  ],
   width: "device-width",
   initialScale: 1,
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Arachchi",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://arachchi.com",
+  logo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://arachchi.com"}/logo.png`,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Toronto",
+    addressRegion: "ON",
+    addressCountry: "CA",
+  },
+  sameAs: [],
 };
 
 export default function RootLayout({
@@ -43,10 +79,21 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${heading.variable} ${body.variable} h-full`}
+      className={`${heading.variable} ${body.variable} ${display.variable} h-full`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col antialiased bg-background text-foreground">
-        {children}
+        <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          />
+          <div id="splash" aria-hidden="true">
+            <span>arachchi</span>
+          </div>
+          <SplashController />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

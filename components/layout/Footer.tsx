@@ -38,10 +38,10 @@ export function Footer() {
           <div className="space-y-4">
             <Link
               href="/"
-              className="font-serif text-lg tracking-[0.3em] uppercase text-foreground"
+              className="font-display text-lg font-light tracking-[0.35em] text-foreground"
               aria-label="Arachchi home"
             >
-              Arachchi
+              arachchi
             </Link>
             <p className="text-xs leading-relaxed text-muted-foreground max-w-[200px]">
               Toronto-based luxury clothing — designed with intention.

@@ -17,7 +17,7 @@ export function LoadingScreen() {
 
     // Async updates avoid cascading renders from synchronous setState in effect
     const showTimer = setTimeout(() => setVisible(true), 0);
-    const hideTimer = setTimeout(() => setVisible(false), 1800);
+    const hideTimer = setTimeout(() => setVisible(false), 3200);
 
     return () => {
       clearTimeout(showTimer);
