@@ -1,6 +1,6 @@
 # Arachchi - Current Progress
 
-_Last updated: 2026-05-11, Toronto local time_
+_Last updated: 2026-05-11, 18:30 Toronto local time_
 
 ## Current Phase
 Phase 7 (SEO, performance, security) — complete. Phase 8 is pre-launch ops only.
@@ -13,6 +13,17 @@ Phase 7 (SEO, performance, security) — complete. Phase 8 is pre-launch ops onl
 - **Phase 5: Admin panel** — dashboard, products CRUD + image upload, tags, orders, customers, inventory, Vercel cron
 - **Phase 6: Content** — Journal, Lookbook, About, Newsletter, Tiptap rich text editor
 - **Phase 7: SEO, performance, security** — security headers, CSP, HSTS, sitemap.xml, robots.txt, JSON-LD (Product, Article, Organization), full OG/Twitter metadata, rate limiting in middleware; comprehensive admin dashboard (revenue chart, top sellers, top viewed, recent orders, customer/product/newsletter stats)
+
+### Admin + auth polish pass (2026-05-11) — FINALISED
+- **Auth**: role-based login redirect (admin/staff → `/admin`, customers → `/account`); logout redirects to `/login`
+- **Navbar**: role-aware — shows "Dashboard" for admin/staff, "My Profile" for customers, "Sign In" when logged out
+- **Admin sidebar**: Analytics + Settings nav items added; ThemeToggle in sidebar footer
+- **Admin analytics**: full analytics page with KPI cards (revenue, orders, new customers, avg order) + 5 Recharts charts (revenue/orders line, customer growth area, order status donut, category revenue bar, day-of-week bar); period selector: 7d / 30d / 90d / All time / Custom date range
+- **Customer settings**: Appearance (theme), Email Notifications, Privacy sections
+- **Admin settings**: Appearance + password change
+- **Seed scripts**: `scripts/seed-users.ts` (3 test accounts: customer/staff/admin at qwerty123456); `scripts/seed-orders.ts` (220 orders over 365 days, recency-biased, realistic status distribution)
+- **Loading screen**: cream-to-blush gradient background + 10 falling plum blossoms (CSS-custom-property driven, manhwa-delicate)
+- **Theme**: `storageKey="arachchi-theme"` resets stored dark preference so new users default to light
 
 ### Post-phase polish (2026-05-10) — FINALISED
 - Fixed `NEXT_PUBLIC_SUPABASE_URL` (had `/rest/v1/` appended — breaking all auth)

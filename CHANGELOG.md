@@ -4,6 +4,43 @@ All notable changes are recorded here. Newest entries at the top.
 
 ---
 
+## 2026-05-11 — Admin polish, analytics, loading screen (session 4)
+
+### Auth & role routing
+- Role-based login redirect: admin/staff go to `/admin`, customers to `/account`
+- Logout redirects to `/login` instead of homepage
+- Navbar shows "Dashboard" (→ `/admin`) for admin/staff, "My Profile" (→ `/account`) for customers, "Sign In" for guests
+
+### Admin analytics page — `app/admin/analytics/`
+- New `page.tsx` with KPI cards (revenue, orders, new customers, avg order) and 5 Recharts charts
+- `Charts.tsx`: `RevenueOrdersChart` (dual-axis line), `CustomerGrowthChart` (area + gradient), `OrderStatusDonut` (pie), `CategoryRevenueChart` (horizontal bar), `DayOfWeekChart` (vertical bar)
+- `PeriodSelector.tsx`: preset buttons (7d / 30d / 90d / All time) + Custom toggle with from/to date inputs
+- `lib/db/queries/admin.ts`: `getAnalytics()` now accepts optional `from`/`to` dates; `getDateRange()` helper centralises all period logic; returns `dayCount` for chart filling; category join fixed to go through `productVariants`; status filter uses raw SQL `::order_status[]` cast to avoid Drizzle enum conflict
+
+### Admin sidebar & settings
+- Analytics and Settings nav items added to `AdminSidebar`
+- `ThemeToggle` added to sidebar footer
+- New `app/admin/settings/page.tsx`: Appearance (theme) + password change
+
+### Customer settings — `app/(storefront)/account/settings/page.tsx`
+- Appearance section (Light/Dark buttons via `useTheme`)
+- Email Notifications section (marketing opt-in + always-on items)
+- Privacy & Data section (account deletion instructions)
+
+### Seed scripts
+- `scripts/seed-users.ts`: creates test@customer.com, test@staff.com, test@admin.com (password: qwerty123456) via Supabase admin API
+- `scripts/seed-orders.ts`: 220 orders over 365 days with recency bias, realistic status distribution (55% delivered, 15% shipped, etc.), 1–3 items per order
+
+### Loading screen
+- `#splash` background updated to cream-to-blush gradient (bottom-left cream → center pinkish → top-right blush)
+- 10 falling plum blossom SVGs (5 petals, manhwa-delicate) with CSS custom properties (`--dur`, `--delay`, `--drift`, `--spin`) driving a single `@keyframes blossom-fall` definition
+- Blossoms rendered server-side in `app/layout.tsx` alongside the "arachchi" wordmark
+
+### Theme default
+- `storageKey="arachchi-theme"` added to ThemeProvider, resetting any stored dark preference so new users always start in light mode
+
+---
+
 ## 2026-05-11 — Full feature + UI/UX pass (session 3)
 
 ### Back-in-stock notifications — `app/actions/admin.ts`
