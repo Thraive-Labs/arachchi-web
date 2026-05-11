@@ -96,7 +96,8 @@ async function seedOrders() {
 
     const subtotalCents = selectedVariants.reduce((s, v) => s + v.priceCents, 0);
     const shippingCents = subtotalCents >= 25000 ? 0 : 1500;
-    const totalCents    = subtotalCents + shippingCents;
+    const taxCents      = Math.round(subtotalCents * 0.13); // 13% HST
+    const totalCents    = subtotalCents + shippingCents + taxCents;
 
     const orderNumber = `AR-${String(100000 + i).padStart(6, "0")}`;
 
@@ -111,16 +112,9 @@ async function seedOrders() {
         subtotalCents,
         discountCents:   0,
         shippingCents,
+        taxCents,
         totalCents,
         stripeSessionId: `cs_seed_${Date.now()}_${i}`,
-        shippingAddress: {
-          fullName:   "Test Customer",
-          line1:      "123 Queen St W",
-          city:       "Toronto",
-          province:   "ON",
-          postalCode: "M5H 2M9",
-          country:    "CA",
-        },
         createdAt,
         updatedAt: createdAt,
       })

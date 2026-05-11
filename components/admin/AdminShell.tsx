@@ -9,7 +9,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-background">
+    <div className="flex h-dvh overflow-hidden bg-secondary">
       {/* Desktop sidebar — always visible */}
       <div className="hidden lg:flex lg:shrink-0">
         <AdminSidebar />

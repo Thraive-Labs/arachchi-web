@@ -52,8 +52,14 @@ export function RevenueChart({ data }: Props) {
                 </div>
               )}
               <div
-                className={`w-full transition-all ${hasRevenue ? "bg-foreground hover:bg-foreground/70" : "bg-border"}`}
-                style={{ height: `${Math.max(heightPct, hasRevenue ? 4 : 1)}%` }}
+                className="w-full transition-all"
+                style={{
+                  height: `${Math.max(heightPct, hasRevenue ? 4 : 1)}%`,
+                  background: hasRevenue
+                    ? "linear-gradient(to top, hsl(350 45% 62%), hsl(350 38% 78%))"
+                    : "hsl(var(--muted))",
+                  opacity: hasRevenue ? 1 : 0.5,
+                }}
               />
             </div>
           );

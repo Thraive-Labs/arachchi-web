@@ -2,12 +2,12 @@
 
 import {
   ResponsiveContainer,
-  LineChart,
+  ComposedChart,
   Line,
+  Area,
   BarChart,
   Bar,
   AreaChart,
-  Area,
   PieChart,
   Pie,
   Cell,
@@ -29,31 +29,48 @@ function fmtDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-CA", { month: "short", day: "numeric" });
 }
 
-const CHART_COLORS = {
-  primary:  "#a0845c",
-  secondary:"#6b7280",
-  tertiary: "#c4a882",
-  accent:   "#374151",
+// Editorial palette — warm luxury tones
+const ROSE    = "#c97b8e";
+const AMBER   = "#d4935a";
+const TEAL    = "#6fa8a0";
+const PLUM    = "#8f7aab";
+const CARAMEL = "#b8935a";
+const SLATE   = "#6f8db5";
+const SAGE    = "#87a87a";
+
+const CATEGORY_PALETTE = [ROSE, AMBER, TEAL, PLUM, CARAMEL, SLATE, SAGE, "#b57a8f"];
+
+const DOW_COLORS = [ROSE, AMBER, TEAL, PLUM, CARAMEL, SLATE, SAGE];
+
+const STATUS_COLORS_MAP: Record<string, string> = {
+  pending:   "#e8a83c",
+  paid:      SLATE,
+  fulfilled: PLUM,
+  shipped:   TEAL,
+  delivered: SAGE,
+  cancelled: "#c96464",
+  refunded:  "#a0a0a0",
 };
 
-const CATEGORY_PALETTE = [
-  "#a0845c", "#c4a882", "#7c6248", "#d4b896",
-  "#6b7280", "#9ca3af", "#4b5563", "#374151",
-];
+const STATUS_LABELS: Record<string, string> = {
+  pending: "Pending", paid: "Processing", fulfilled: "Fulfilled",
+  shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled", refunded: "Refunded",
+};
 
-const CustomTooltipStyle = {
+const tooltipStyle = {
   contentStyle: {
     background: "hsl(var(--background))",
     border: "1px solid hsl(var(--border))",
     borderRadius: 0,
     fontSize: 11,
     color: "hsl(var(--foreground))",
+    boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
   },
   itemStyle: { color: "hsl(var(--foreground))" },
   labelStyle: { color: "hsl(var(--muted-foreground))", marginBottom: 4 },
 };
 
-// ── Revenue + Orders combo line chart ────────────────────────────────────────
+// ── Revenue + Orders combo chart ──────────────────────────────────────────────
 
 interface RevOrderRow {
   day: string;
@@ -62,7 +79,6 @@ interface RevOrderRow {
 }
 
 export function RevenueOrdersChart({ data, days }: { data: RevOrderRow[]; days: number }) {
-  // Fill missing days
   const filled: RevOrderRow[] = [];
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date();
@@ -74,7 +90,7 @@ export function RevenueOrdersChart({ data, days }: { data: RevOrderRow[]; days: 
 
   const formatted = filled.map((r) => ({
     ...r,
-    label: fmtDate(r.day),
+    label:   fmtDate(r.day),
     revenue: r.revenue_cents / 100,
   }));
 
@@ -84,7 +100,13 @@ export function RevenueOrdersChart({ data, days }: { data: RevOrderRow[]; days: 
 
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <LineChart data={formatted} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+      <ComposedChart data={formatted} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+        <defs>
+          <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%"  stopColor={ROSE} stopOpacity={0.25} />
+            <stop offset="95%" stopColor={ROSE} stopOpacity={0}    />
+          </linearGradient>
+        </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
         <XAxis
           dataKey="label"
@@ -110,7 +132,7 @@ export function RevenueOrdersChart({ data, days }: { data: RevOrderRow[]; days: 
           width={28}
         />
         <Tooltip
-          {...CustomTooltipStyle}
+          {...tooltipStyle}
           formatter={(value, name) => {
             const v = Number(value);
             return name === "Revenue" ? [`$${v.toFixed(2)}`, "Revenue"] : [v, "Orders"];
@@ -118,28 +140,29 @@ export function RevenueOrdersChart({ data, days }: { data: RevOrderRow[]; days: 
           labelFormatter={(l) => l}
         />
         <Legend wrapperStyle={{ fontSize: 11 }} />
-        <Line
+        <Area
           yAxisId="rev"
           type="monotone"
           dataKey="revenue"
           name="Revenue"
-          stroke={CHART_COLORS.primary}
+          stroke={ROSE}
           strokeWidth={2}
+          fill="url(#revGrad)"
           dot={false}
-          activeDot={{ r: 3 }}
+          activeDot={{ r: 4, fill: ROSE }}
         />
         <Line
           yAxisId="ord"
           type="monotone"
           dataKey="order_count"
           name="Orders"
-          stroke={CHART_COLORS.secondary}
+          stroke={SLATE}
           strokeWidth={1.5}
           strokeDasharray="4 2"
           dot={false}
-          activeDot={{ r: 3 }}
+          activeDot={{ r: 3, fill: SLATE }}
         />
-      </LineChart>
+      </ComposedChart>
     </ResponsiveContainer>
   );
 }
@@ -158,12 +181,7 @@ export function CustomerGrowthChart({ data, days }: { data: CustomerRow[]; days:
     filled.push({ day: key, new_customers: found?.new_customers ?? 0 });
   }
 
-  let running = 0;
-  const formatted = filled.map((r) => {
-    running += r.new_customers;
-    return { label: fmtDate(r.day), new_customers: r.new_customers, cumulative: running };
-  });
-
+  const formatted = filled.map((r) => ({ label: fmtDate(r.day), new_customers: r.new_customers }));
   const tickEvery = days <= 7 ? 1 : days <= 30 ? 7 : 14;
 
   return (
@@ -171,8 +189,8 @@ export function CustomerGrowthChart({ data, days }: { data: CustomerRow[]; days:
       <AreaChart data={formatted} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id="custGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%"  stopColor={CHART_COLORS.tertiary} stopOpacity={0.3} />
-            <stop offset="95%" stopColor={CHART_COLORS.tertiary} stopOpacity={0}   />
+            <stop offset="5%"  stopColor={TEAL} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={TEAL} stopOpacity={0}   />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -190,15 +208,16 @@ export function CustomerGrowthChart({ data, days }: { data: CustomerRow[]; days:
           allowDecimals={false}
           width={28}
         />
-        <Tooltip {...CustomTooltipStyle} labelFormatter={(l) => l} />
+        <Tooltip {...tooltipStyle} labelFormatter={(l) => l} />
         <Area
           type="monotone"
           dataKey="new_customers"
           name="New customers"
-          stroke={CHART_COLORS.tertiary}
+          stroke={TEAL}
           strokeWidth={2}
           fill="url(#custGrad)"
           dot={false}
+          activeDot={{ r: 4, fill: TEAL }}
         />
       </AreaChart>
     </ResponsiveContainer>
@@ -207,32 +226,16 @@ export function CustomerGrowthChart({ data, days }: { data: CustomerRow[]; days:
 
 // ── Order status donut ────────────────────────────────────────────────────────
 
-const STATUS_COLORS_MAP: Record<string, string> = {
-  pending:   "#f59e0b",
-  paid:      "#3b82f6",
-  fulfilled: "#6366f1",
-  shipped:   "#8b5cf6",
-  delivered: "#10b981",
-  cancelled: "#ef4444",
-  refunded:  "#6b7280",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Pending", paid: "Processing", fulfilled: "Fulfilled",
-  shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled", refunded: "Refunded",
-};
-
 interface StatusRow { status: string; total: number }
 
 export function OrderStatusDonut({ data }: { data: StatusRow[] }) {
   const formatted = data.map((d) => ({
     name:  STATUS_LABELS[d.status] ?? d.status,
     value: d.total,
-    color: STATUS_COLORS_MAP[d.status] ?? "#9ca3af",
+    color: STATUS_COLORS_MAP[d.status] ?? "#a0a0a0",
   }));
 
   const total = formatted.reduce((s, d) => s + d.value, 0);
-
   if (total === 0) return <EmptyState />;
 
   return (
@@ -252,10 +255,7 @@ export function OrderStatusDonut({ data }: { data: StatusRow[] }) {
               <Cell key={i} fill={entry.color} />
             ))}
           </Pie>
-          <Tooltip
-            {...CustomTooltipStyle}
-            formatter={(raw) => [Number(raw), ""]}
-          />
+          <Tooltip {...tooltipStyle} formatter={(raw) => [Number(raw), ""]} />
         </PieChart>
       </ResponsiveContainer>
       <div className="space-y-1.5 flex-1 min-w-0">
@@ -311,12 +311,12 @@ export function CategoryRevenueChart({ data }: { data: CategoryRow[] }) {
           width={90}
         />
         <Tooltip
-          {...CustomTooltipStyle}
+          {...tooltipStyle}
           formatter={(raw) => [`$${Number(raw).toFixed(2)}`, "Revenue"]}
         />
-        <Bar dataKey="revenue" radius={[0, 2, 2, 0]} maxBarSize={20}>
+        <Bar dataKey="revenue" radius={[0, 3, 3, 0]} maxBarSize={22}>
           {formatted.map((entry, i) => (
-            <Cell key={i} fill={entry.color} />
+            <Cell key={i} fill={entry.color} fillOpacity={0.88} />
           ))}
         </Bar>
       </BarChart>
@@ -334,9 +334,10 @@ export function DayOfWeekChart({ data }: { data: DowRow[] }) {
   const all = Array.from({ length: 7 }, (_, i) => {
     const found = data.find((d) => d.dow === i);
     return {
-      day: DOW_LABELS[i],
+      day:     DOW_LABELS[i],
       revenue: (found?.revenue_cents ?? 0) / 100,
       orders:  found?.order_count ?? 0,
+      color:   DOW_COLORS[i],
     };
   });
 
@@ -358,10 +359,14 @@ export function DayOfWeekChart({ data }: { data: DowRow[] }) {
           width={44}
         />
         <Tooltip
-          {...CustomTooltipStyle}
+          {...tooltipStyle}
           formatter={(raw) => [`$${Number(raw).toFixed(2)}`, "Revenue"]}
         />
-        <Bar dataKey="revenue" fill={CHART_COLORS.primary} radius={[2, 2, 0, 0]} maxBarSize={36} />
+        <Bar dataKey="revenue" radius={[3, 3, 0, 0]} maxBarSize={36}>
+          {all.map((entry, i) => (
+            <Cell key={i} fill={entry.color} fillOpacity={0.88} />
+          ))}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
