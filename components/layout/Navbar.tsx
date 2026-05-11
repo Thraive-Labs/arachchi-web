@@ -10,6 +10,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { MobileMenu } from "./MobileMenu";
 import { SearchOverlay } from "./SearchOverlay";
 import { logoutAction } from "@/app/actions/auth";
+import type { UserRole } from "@/app/(storefront)/layout";
 
 const navLinks = [
   { label: "Shop",     href: "/shop"     },
@@ -18,7 +19,7 @@ const navLinks = [
   { label: "About",    href: "/about"    },
 ];
 
-export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
+export function Navbar({ role }: { role: UserRole }) {
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -38,19 +39,24 @@ export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
   const isPreScroll = isHome && !scrolled;
 
-  // Light pre-scroll: transparent over hero image
-  // Dark pre-scroll: bg-secondary (matches the warm dark hero left panel)
-  // After scroll (both): solid bg-background/90 with blur
   const headerClass = isPreScroll
     ? isDark
       ? "border-transparent bg-secondary"
       : "border-transparent bg-transparent"
     : "border-border/60 bg-background/90 backdrop-blur-sm";
+
+  const isLoggedIn = role !== null;
+  const isAdminOrStaff = role === "admin" || role === "staff";
+  // Hide the account/dashboard link when already on that section
+  const onAccountPage = pathname.startsWith("/account");
+  const showAccountLink = isLoggedIn && !onAccountPage;
+
+  const accountLabel = isAdminOrStaff ? "Dashboard" : "My Profile";
+  const accountHref  = isAdminOrStaff ? "/admin"    : "/account";
 
   return (
     <>
@@ -105,16 +111,17 @@ export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
               <ThemeToggle />
             </span>
 
-            {/* Account / Sign In / Log Out — desktop only */}
+            {/* Account / Dashboard / Sign In — desktop only */}
             {isLoggedIn ? (
               <>
-                <Link
-                  href="/account"
-                  className="hidden text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground md:block"
-                  aria-label="Account"
-                >
-                  Account
-                </Link>
+                {showAccountLink && (
+                  <Link
+                    href={accountHref}
+                    className="hidden text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground md:block"
+                  >
+                    {accountLabel}
+                  </Link>
+                )}
                 <form action={logoutAction} className="hidden md:block">
                   <button
                     type="submit"
@@ -152,7 +159,7 @@ export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
         isOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
         onSearchOpen={() => setSearchOpen(true)}
-        isLoggedIn={isLoggedIn}
+        role={role}
       />
       <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>

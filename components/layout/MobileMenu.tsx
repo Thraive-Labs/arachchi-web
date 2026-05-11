@@ -4,8 +4,10 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
 import { logoutAction } from "@/app/actions/auth";
+import type { UserRole } from "@/app/(storefront)/layout";
 
 const navLinks = [
   { label: "Shop",     href: "/shop"     },
@@ -18,10 +20,12 @@ interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
   onSearchOpen: () => void;
-  isLoggedIn: boolean;
+  role: UserRole;
 }
 
-export function MobileMenu({ isOpen, onClose, onSearchOpen, isLoggedIn }: MobileMenuProps) {
+export function MobileMenu({ isOpen, onClose, onSearchOpen, role }: MobileMenuProps) {
+  const pathname = usePathname();
+
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -29,11 +33,18 @@ export function MobileMenu({ isOpen, onClose, onSearchOpen, isLoggedIn }: Mobile
     return () => document.removeEventListener("keydown", handler);
   }, [isOpen, onClose]);
 
-  // Prevent body scroll when menu is open
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
+
+  const isLoggedIn = role !== null;
+  const isAdminOrStaff = role === "admin" || role === "staff";
+  const onAccountPage = pathname.startsWith("/account");
+  const showAccountLink = isLoggedIn && !onAccountPage;
+
+  const accountLabel = isAdminOrStaff ? "Dashboard" : "My Profile";
+  const accountHref  = isAdminOrStaff ? "/admin"    : "/account";
 
   return (
     <AnimatePresence>
@@ -85,20 +96,24 @@ export function MobileMenu({ isOpen, onClose, onSearchOpen, isLoggedIn }: Mobile
               <div className="pt-6 border-t border-border mt-6 space-y-1">
                 {isLoggedIn ? (
                   <>
-                    <Link
-                      href="/account"
-                      onClick={onClose}
-                      className="block py-2 text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Account
-                    </Link>
-                    <Link
-                      href="/account/wishlist"
-                      onClick={onClose}
-                      className="block py-2 text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Wishlist
-                    </Link>
+                    {showAccountLink && (
+                      <Link
+                        href={accountHref}
+                        onClick={onClose}
+                        className="block py-2 text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {accountLabel}
+                      </Link>
+                    )}
+                    {!isAdminOrStaff && (
+                      <Link
+                        href="/account/wishlist"
+                        onClick={onClose}
+                        className="block py-2 text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Wishlist
+                      </Link>
+                    )}
                     <form action={logoutAction}>
                       <button
                         type="submit"

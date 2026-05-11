@@ -2,10 +2,25 @@ import Link from "next/link";
 import { getAllBundlesAdmin } from "@/lib/db/queries/bundles";
 import { formatPriceCents } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Bundles — Admin" };
 
 export default async function AdminBundlesPage() {
-  const bundleList = await getAllBundlesAdmin();
+  let bundleList: Awaited<ReturnType<typeof getAllBundlesAdmin>> = [];
+  try {
+    bundleList = await getAllBundlesAdmin();
+  } catch {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-light tracking-wide">Bundles</h1>
+        <p className="text-sm text-muted-foreground">
+          The bundles table has not been created yet. Run{" "}
+          <code className="font-mono text-xs bg-muted px-1 py-0.5">npm run db:push</code>{" "}
+          to sync the database schema.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

@@ -13,22 +13,27 @@ import {
   Camera,
   Layers,
   Percent,
+  BarChart2,
+  Settings,
   ArrowLeft,
   X,
 } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 const navItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutGrid, exact: true },
-  { href: "/admin/products", label: "Products", icon: Package },
-  { href: "/admin/tags", label: "Tags", icon: Tag },
-  { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
-  { href: "/admin/customers", label: "Customers", icon: Users },
-  { href: "/admin/inventory", label: "Inventory", icon: Boxes },
-  { href: "/admin/bundles", label: "Bundles", icon: Layers },
-  { href: "/admin/discounts", label: "Discounts", icon: Percent },
-  { href: "/admin/journal", label: "Journal", icon: BookOpen },
-  { href: "/admin/lookbook", label: "Lookbook", icon: Camera },
+  { href: "/admin",            label: "Dashboard", icon: LayoutGrid, exact: true },
+  { href: "/admin/analytics",  label: "Analytics", icon: BarChart2  },
+  { href: "/admin/products",   label: "Products",  icon: Package    },
+  { href: "/admin/tags",       label: "Tags",      icon: Tag        },
+  { href: "/admin/orders",     label: "Orders",    icon: ShoppingBag},
+  { href: "/admin/customers",  label: "Customers", icon: Users      },
+  { href: "/admin/inventory",  label: "Inventory", icon: Boxes      },
+  { href: "/admin/bundles",    label: "Bundles",   icon: Layers     },
+  { href: "/admin/discounts",  label: "Discounts", icon: Percent    },
+  { href: "/admin/journal",    label: "Journal",   icon: BookOpen   },
+  { href: "/admin/lookbook",   label: "Lookbook",  icon: Camera     },
+  { href: "/admin/settings",   label: "Settings",  icon: Settings   },
 ];
 
 export function AdminSidebar({ onClose }: { onClose?: () => void }) {
@@ -82,6 +87,10 @@ export function AdminSidebar({ onClose }: { onClose?: () => void }) {
 
       {/* Footer */}
       <div className="border-t border-border px-3 py-4 space-y-0.5">
+        <div className="flex items-center justify-between px-3 py-2.5">
+          <span className="text-xs tracking-[0.1em] uppercase text-muted-foreground">Theme</span>
+          <ThemeToggle />
+        </div>
         <Link
           href="/"
           className="flex items-center gap-3 px-3 py-2.5 text-xs tracking-[0.1em] uppercase text-muted-foreground hover:text-foreground transition-colors"

@@ -1,4 +1,4 @@
-import { count, sum, desc, eq, and, gte, lte, inArray, ilike, sql, avg } from "drizzle-orm";
+import { count, sum, desc, eq, and, gte, lte, inArray, ilike, sql, avg, isNotNull } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import {
   orders,
@@ -386,4 +386,123 @@ export async function getInventoryLevels(opts: { lowStockOnly?: boolean } = {}) 
     .innerJoin(products, eq(productVariants.productId, products.id))
     .where(and(...conditions))
     .orderBy(productVariants.stockQuantity, products.name);
+}
+
+// ── Analytics ─────────────────────────────────────────────────────────────────
+
+export type AnalyticsPeriod = "7d" | "30d" | "90d";
+
+function periodStart(period: AnalyticsPeriod): Date {
+  const days = period === "7d" ? 7 : period === "30d" ? 30 : 90;
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d;
+}
+
+export async function getAnalytics(period: AnalyticsPeriod = "30d") {
+  const start = periodStart(period);
+  const paidStatuses = ["paid", "fulfilled", "shipped", "delivered"];
+
+  const [
+    revenueRows,
+    customerRows,
+    categoryRows,
+    dowRows,
+    kpiRow,
+    statusRows,
+  ] = await Promise.all([
+
+    // Revenue + orders by day
+    db.execute(sql`
+      SELECT
+        DATE_TRUNC('day', created_at)::date AS day,
+        COALESCE(SUM(total_cents), 0)::int   AS revenue_cents,
+        COUNT(*)::int                          AS order_count
+      FROM orders
+      WHERE created_at >= ${start}
+        AND status = ANY(ARRAY['paid','fulfilled','shipped','delivered']::order_status[])
+      GROUP BY 1
+      ORDER BY 1
+    `),
+
+    // New customers by day
+    db.execute(sql`
+      SELECT
+        DATE_TRUNC('day', created_at)::date AS day,
+        COUNT(*)::int                         AS new_customers
+      FROM users
+      WHERE created_at >= ${start}
+      GROUP BY 1
+      ORDER BY 1
+    `),
+
+    // Revenue by category
+    db
+      .select({
+        categoryName: categories.name,
+        revenueCents: sql<number>`COALESCE(SUM(${orderItems.unitPriceCents} * ${orderItems.quantity}), 0)::int`,
+        orderCount:   sql<number>`COUNT(DISTINCT ${orders.id})::int`,
+      })
+      .from(orderItems)
+      .innerJoin(orders,     eq(orders.id,     orderItems.orderId))
+      .innerJoin(products,   eq(products.id,   orderItems.productId))
+      .innerJoin(categories, eq(categories.id, products.categoryId))
+      .where(and(gte(orders.createdAt, start), inArray(orders.status, paidStatuses), isNotNull(products.categoryId)))
+      .groupBy(categories.name)
+      .orderBy(desc(sql`SUM(${orderItems.unitPriceCents} * ${orderItems.quantity})`))
+      .limit(8),
+
+    // Revenue by day of week (0=Sun … 6=Sat)
+    db.execute(sql`
+      SELECT
+        EXTRACT(DOW FROM created_at)::int AS dow,
+        COALESCE(SUM(total_cents), 0)::int AS revenue_cents,
+        COUNT(*)::int                       AS order_count
+      FROM orders
+      WHERE created_at >= ${start}
+        AND status = ANY(ARRAY['paid','fulfilled','shipped','delivered']::order_status[])
+      GROUP BY 1
+      ORDER BY 1
+    `),
+
+    // Overall KPIs for the period
+    db.execute(sql`
+      SELECT
+        COALESCE(SUM(total_cents), 0)::int         AS revenue_cents,
+        COUNT(*)::int                               AS order_count,
+        COALESCE(AVG(total_cents), 0)::int          AS avg_order_cents
+      FROM orders
+      WHERE created_at >= ${start}
+        AND status = ANY(ARRAY['paid','fulfilled','shipped','delivered']::order_status[])
+    `),
+
+    // Order status breakdown for period
+    db.execute(sql`
+      SELECT status::text, COUNT(*)::int AS total
+      FROM orders
+      WHERE created_at >= ${start}
+      GROUP BY status
+    `),
+  ]);
+
+  type RevenueRow    = { day: string; revenue_cents: number; order_count: number };
+  type CustomerRow   = { day: string; new_customers: number };
+  type DowRow        = { dow: number; revenue_cents: number; order_count: number };
+  type StatusRow     = { status: string; total: number };
+  type KpiRow        = { revenue_cents: number; order_count: number; avg_order_cents: number };
+
+  const kpi = (kpiRow.rows[0] as KpiRow) ?? { revenue_cents: 0, order_count: 0, avg_order_cents: 0 };
+
+  // Count new customers in period (sum customerRows)
+  const newCustomers = (customerRows.rows as CustomerRow[]).reduce((s, r) => s + r.new_customers, 0);
+
+  return {
+    period,
+    kpi: { ...kpi, newCustomers },
+    revenueByDay:   revenueRows.rows  as RevenueRow[],
+    customersByDay: customerRows.rows as CustomerRow[],
+    categoryData:   categoryRows,
+    dowData:        dowRows.rows      as DowRow[],
+    statusData:     statusRows.rows   as StatusRow[],
+  };
 }
