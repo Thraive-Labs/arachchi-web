@@ -107,7 +107,7 @@ export function Navbar({ role }: { role: UserRole }) {
             </button>
 
             {/* Theme toggle — desktop only */}
-            <span className="hidden md:block">
+            <span className="hidden md:inline-flex md:items-center">
               <ThemeToggle />
             </span>
 
@@ -117,12 +117,12 @@ export function Navbar({ role }: { role: UserRole }) {
                 {showAccountLink && (
                   <Link
                     href={accountHref}
-                    className="hidden text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground md:block"
+                    className="hidden md:inline-flex md:items-center text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground"
                   >
                     {accountLabel}
                   </Link>
                 )}
-                <form action={logoutAction} className="hidden md:block">
+                <form action={logoutAction} className="hidden md:inline-flex md:items-center">
                   <button
                     type="submit"
                     className="text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground"
@@ -134,7 +134,7 @@ export function Navbar({ role }: { role: UserRole }) {
             ) : (
               <Link
                 href="/login"
-                className="hidden text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground md:block"
+                className="hidden md:inline-flex md:items-center text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground"
                 aria-label="Sign in"
               >
                 Sign In
