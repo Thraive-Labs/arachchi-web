@@ -390,17 +390,35 @@ export async function getInventoryLevels(opts: { lowStockOnly?: boolean } = {}) 
 
 // ── Analytics ─────────────────────────────────────────────────────────────────
 
-export type AnalyticsPeriod = "7d" | "30d" | "90d";
+export type AnalyticsPeriod = "7d" | "30d" | "90d" | "all";
 
-function periodStart(period: AnalyticsPeriod): Date {
-  const days = period === "7d" ? 7 : period === "30d" ? 30 : 90;
-  const d = new Date();
-  d.setDate(d.getDate() - days);
-  return d;
+function getDateRange(
+  period: AnalyticsPeriod,
+  from?: Date,
+  to?: Date,
+): { start: Date; end: Date; days: number } {
+  const end = to ?? new Date();
+  let start: Date;
+  if (from) {
+    start = from;
+  } else if (period === "all") {
+    start = new Date(end);
+    start.setFullYear(start.getFullYear() - 2);
+  } else {
+    const days = period === "7d" ? 7 : period === "30d" ? 30 : 90;
+    start = new Date(end);
+    start.setDate(start.getDate() - days);
+  }
+  const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86_400_000));
+  return { start, end, days };
 }
 
-export async function getAnalytics(period: AnalyticsPeriod = "30d") {
-  const start = periodStart(period);
+export async function getAnalytics(
+  period: AnalyticsPeriod = "30d",
+  from?: Date,
+  to?: Date,
+) {
+  const { start, end, days: dayCount } = getDateRange(period, from, to);
   const paidStatuses = ["paid", "fulfilled", "shipped", "delivered"];
 
   const [
@@ -419,7 +437,7 @@ export async function getAnalytics(period: AnalyticsPeriod = "30d") {
         COALESCE(SUM(total_cents), 0)::int   AS revenue_cents,
         COUNT(*)::int                          AS order_count
       FROM orders
-      WHERE created_at >= ${start}
+      WHERE created_at >= ${start} AND created_at <= ${end}
         AND status = ANY(ARRAY['paid','fulfilled','shipped','delivered']::order_status[])
       GROUP BY 1
       ORDER BY 1
@@ -431,7 +449,7 @@ export async function getAnalytics(period: AnalyticsPeriod = "30d") {
         DATE_TRUNC('day', created_at)::date AS day,
         COUNT(*)::int                         AS new_customers
       FROM users
-      WHERE created_at >= ${start}
+      WHERE created_at >= ${start} AND created_at <= ${end}
       GROUP BY 1
       ORDER BY 1
     `),
@@ -450,6 +468,7 @@ export async function getAnalytics(period: AnalyticsPeriod = "30d") {
       .innerJoin(categories,      eq(categories.id,      products.categoryId))
       .where(and(
         gte(orders.createdAt, start),
+        lte(orders.createdAt, end),
         sql`${orders.status} = ANY(ARRAY['paid','fulfilled','shipped','delivered']::order_status[])`,
         isNotNull(products.categoryId),
       ))
@@ -464,7 +483,7 @@ export async function getAnalytics(period: AnalyticsPeriod = "30d") {
         COALESCE(SUM(total_cents), 0)::int AS revenue_cents,
         COUNT(*)::int                       AS order_count
       FROM orders
-      WHERE created_at >= ${start}
+      WHERE created_at >= ${start} AND created_at <= ${end}
         AND status = ANY(ARRAY['paid','fulfilled','shipped','delivered']::order_status[])
       GROUP BY 1
       ORDER BY 1
@@ -477,7 +496,7 @@ export async function getAnalytics(period: AnalyticsPeriod = "30d") {
         COUNT(*)::int                               AS order_count,
         COALESCE(AVG(total_cents), 0)::int          AS avg_order_cents
       FROM orders
-      WHERE created_at >= ${start}
+      WHERE created_at >= ${start} AND created_at <= ${end}
         AND status = ANY(ARRAY['paid','fulfilled','shipped','delivered']::order_status[])
     `),
 
@@ -485,7 +504,7 @@ export async function getAnalytics(period: AnalyticsPeriod = "30d") {
     db.execute(sql`
       SELECT status::text, COUNT(*)::int AS total
       FROM orders
-      WHERE created_at >= ${start}
+      WHERE created_at >= ${start} AND created_at <= ${end}
       GROUP BY status
     `),
   ]);
@@ -503,6 +522,7 @@ export async function getAnalytics(period: AnalyticsPeriod = "30d") {
 
   return {
     period,
+    dayCount,
     kpi: { ...kpi, newCustomers },
     revenueByDay:   revenueRows.rows  as RevenueRow[],
     customersByDay: customerRows.rows as CustomerRow[],
