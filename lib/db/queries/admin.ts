@@ -155,7 +155,7 @@ export async function getDashboardStats() {
         COALESCE(SUM(${orders.totalCents}), 0)::int AS revenue_cents
       FROM ${orders}
       WHERE ${orders.createdAt} >= ${start30d}
-        AND ${orders.status} = ANY(ARRAY['paid','fulfilled','shipped','delivered'])
+        AND ${orders.status} = ANY(ARRAY['paid','fulfilled','shipped','delivered']::order_status[])
       GROUP BY 1
       ORDER BY 1
     `),
