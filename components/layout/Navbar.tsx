@@ -9,6 +9,7 @@ import { CartIcon } from "./CartIcon";
 import { ThemeToggle } from "./ThemeToggle";
 import { MobileMenu } from "./MobileMenu";
 import { SearchOverlay } from "./SearchOverlay";
+import { logoutAction } from "@/app/actions/auth";
 
 const navLinks = [
   { label: "Shop",     href: "/shop"     },
@@ -17,7 +18,7 @@ const navLinks = [
   { label: "About",    href: "/about"    },
 ];
 
-export function Navbar() {
+export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -104,14 +105,34 @@ export function Navbar() {
               <ThemeToggle />
             </span>
 
-            {/* Account — desktop only */}
-            <Link
-              href="/account"
-              className="hidden text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground md:block"
-              aria-label="Account"
-            >
-              Account
-            </Link>
+            {/* Account / Sign In / Log Out — desktop only */}
+            {isLoggedIn ? (
+              <>
+                <Link
+                  href="/account"
+                  className="hidden text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground md:block"
+                  aria-label="Account"
+                >
+                  Account
+                </Link>
+                <form action={logoutAction} className="hidden md:block">
+                  <button
+                    type="submit"
+                    className="text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground"
+                  >
+                    Log Out
+                  </button>
+                </form>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground md:block"
+                aria-label="Sign in"
+              >
+                Sign In
+              </Link>
+            )}
 
             <CartIcon />
 
@@ -131,6 +152,7 @@ export function Navbar() {
         isOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
         onSearchOpen={() => setSearchOpen(true)}
+        isLoggedIn={isLoggedIn}
       />
       <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>

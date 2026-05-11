@@ -32,12 +32,25 @@ export async function loginAction(
   if (!result.success) return { error: "Invalid email or password." };
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: result.data.email,
     password: result.data.password,
   });
 
   if (error) return { error: "Invalid email or password." };
+
+  // Redirect staff/admin to the admin panel
+  if (data.user) {
+    const [dbUser] = await db
+      .select({ role: users.role })
+      .from(users)
+      .where(eq(users.id, data.user.id))
+      .limit(1);
+
+    if (dbUser?.role === "admin" || dbUser?.role === "staff") {
+      redirect("/admin");
+    }
+  }
 
   const dest = result.data.redirectTo ?? "/account";
   // Only allow relative redirects to prevent open-redirect attacks

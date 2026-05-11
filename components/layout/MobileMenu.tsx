@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect } from "react";
 import { ThemeToggle } from "./ThemeToggle";
+import { logoutAction } from "@/app/actions/auth";
 
 const navLinks = [
   { label: "Shop",     href: "/shop"     },
@@ -17,9 +18,10 @@ interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
   onSearchOpen: () => void;
+  isLoggedIn: boolean;
 }
 
-export function MobileMenu({ isOpen, onClose, onSearchOpen }: MobileMenuProps) {
+export function MobileMenu({ isOpen, onClose, onSearchOpen, isLoggedIn }: MobileMenuProps) {
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -81,20 +83,40 @@ export function MobileMenu({ isOpen, onClose, onSearchOpen }: MobileMenuProps) {
               ))}
 
               <div className="pt-6 border-t border-border mt-6 space-y-1">
-                <Link
-                  href="/account"
-                  onClick={onClose}
-                  className="block py-2 text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Account
-                </Link>
-                <Link
-                  href="/account/wishlist"
-                  onClick={onClose}
-                  className="block py-2 text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Wishlist
-                </Link>
+                {isLoggedIn ? (
+                  <>
+                    <Link
+                      href="/account"
+                      onClick={onClose}
+                      className="block py-2 text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Account
+                    </Link>
+                    <Link
+                      href="/account/wishlist"
+                      onClick={onClose}
+                      className="block py-2 text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Wishlist
+                    </Link>
+                    <form action={logoutAction}>
+                      <button
+                        type="submit"
+                        className="block w-full py-2 text-left text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Log Out
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={onClose}
+                    className="block py-2 text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                )}
                 <button
                   onClick={() => { onClose(); onSearchOpen(); }}
                   className="block w-full py-2 text-left text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
