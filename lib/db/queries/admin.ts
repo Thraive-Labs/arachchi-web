@@ -444,10 +444,15 @@ export async function getAnalytics(period: AnalyticsPeriod = "30d") {
         orderCount:   sql<number>`COUNT(DISTINCT ${orders.id})::int`,
       })
       .from(orderItems)
-      .innerJoin(orders,     eq(orders.id,     orderItems.orderId))
-      .innerJoin(products,   eq(products.id,   orderItems.productId))
-      .innerJoin(categories, eq(categories.id, products.categoryId))
-      .where(and(gte(orders.createdAt, start), inArray(orders.status, paidStatuses), isNotNull(products.categoryId)))
+      .innerJoin(orders,          eq(orders.id,          orderItems.orderId))
+      .innerJoin(productVariants, eq(productVariants.id, orderItems.variantId))
+      .innerJoin(products,        eq(products.id,        productVariants.productId))
+      .innerJoin(categories,      eq(categories.id,      products.categoryId))
+      .where(and(
+        gte(orders.createdAt, start),
+        sql`${orders.status} = ANY(ARRAY['paid','fulfilled','shipped','delivered']::order_status[])`,
+        isNotNull(products.categoryId),
+      ))
       .groupBy(categories.name)
       .orderBy(desc(sql`SUM(${orderItems.unitPriceCents} * ${orderItems.quantity})`))
       .limit(8),

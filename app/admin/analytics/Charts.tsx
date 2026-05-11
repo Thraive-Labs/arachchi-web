@@ -111,9 +111,10 @@ export function RevenueOrdersChart({ data, days }: { data: RevOrderRow[]; days: 
         />
         <Tooltip
           {...CustomTooltipStyle}
-          formatter={(value: number, name: string) =>
-            name === "Revenue" ? [`$${value.toFixed(2)}`, "Revenue"] : [value, "Orders"]
-          }
+          formatter={(value, name) => {
+            const v = Number(value);
+            return name === "Revenue" ? [`$${v.toFixed(2)}`, "Revenue"] : [v, "Orders"];
+          }}
           labelFormatter={(l) => l}
         />
         <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -253,7 +254,7 @@ export function OrderStatusDonut({ data }: { data: StatusRow[] }) {
           </Pie>
           <Tooltip
             {...CustomTooltipStyle}
-            formatter={(v: number) => [v, ""]}
+            formatter={(raw) => [Number(raw), ""]}
           />
         </PieChart>
       </ResponsiveContainer>
@@ -311,7 +312,7 @@ export function CategoryRevenueChart({ data }: { data: CategoryRow[] }) {
         />
         <Tooltip
           {...CustomTooltipStyle}
-          formatter={(v: number) => [`$${v.toFixed(2)}`, "Revenue"]}
+          formatter={(raw) => [`$${Number(raw).toFixed(2)}`, "Revenue"]}
         />
         <Bar dataKey="revenue" radius={[0, 2, 2, 0]} maxBarSize={20}>
           {formatted.map((entry, i) => (
@@ -358,7 +359,7 @@ export function DayOfWeekChart({ data }: { data: DowRow[] }) {
         />
         <Tooltip
           {...CustomTooltipStyle}
-          formatter={(v: number) => [`$${v.toFixed(2)}`, "Revenue"]}
+          formatter={(raw) => [`$${Number(raw).toFixed(2)}`, "Revenue"]}
         />
         <Bar dataKey="revenue" fill={CHART_COLORS.primary} radius={[2, 2, 0, 0]} maxBarSize={36} />
       </BarChart>
