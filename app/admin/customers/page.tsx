@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAdminCustomers } from "@/lib/db/queries/admin";
+import { RoleSelector } from "@/components/admin/RoleSelector";
 
 export const metadata: Metadata = { title: "Admin — Customers" };
 
@@ -49,11 +50,12 @@ export default async function AdminCustomersPage({ searchParams }: PageProps) {
       </form>
 
       <div className="overflow-x-auto -mx-5 px-5 lg:mx-0 lg:px-0">
-      <table className="w-full min-w-[520px] text-sm">
+      <table className="w-full min-w-[680px] text-sm">
         <thead>
           <tr className="border-b border-border text-xs tracking-[0.1em] uppercase text-muted-foreground">
             <th className="pb-3 text-left font-normal">Name</th>
             <th className="pb-3 text-left font-normal">Email</th>
+            <th className="pb-3 text-left font-normal">Role</th>
             <th className="pb-3 text-center font-normal">Orders</th>
             <th className="pb-3 text-right font-normal">Spent</th>
             <th className="pb-3 text-right font-normal">Joined</th>
@@ -62,7 +64,7 @@ export default async function AdminCustomersPage({ searchParams }: PageProps) {
         <tbody className="divide-y divide-border">
           {customers.length === 0 && (
             <tr>
-              <td colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
+              <td colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
                 No customers found.
               </td>
             </tr>
@@ -71,6 +73,12 @@ export default async function AdminCustomersPage({ searchParams }: PageProps) {
             <tr key={c.id}>
               <td className="py-3 pr-3 text-foreground">{c.fullName ?? "—"}</td>
               <td className="py-3 pr-3 text-muted-foreground text-xs">{c.email}</td>
+              <td className="py-3 pr-3">
+                <RoleSelector
+                  userId={c.id}
+                  currentRole={c.role as "customer" | "staff" | "admin"}
+                />
+              </td>
               <td className="py-3 text-center text-muted-foreground">{c.orderCount}</td>
               <td className="py-3 text-right text-foreground">
                 {c.totalSpentCents > 0

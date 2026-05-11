@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import { Menu } from "lucide-react";
 import { CartIcon } from "./CartIcon";
 import { ThemeToggle } from "./ThemeToggle";
@@ -18,11 +19,16 @@ const navLinks = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  useEffect(() => setMounted(true), []);
+
   const isHome = pathname === "/";
+  const isDark = mounted && resolvedTheme === "dark";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -34,24 +40,27 @@ export function Navbar() {
   // Close mobile menu on route change
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
-  const transparent = isHome && !scrolled;
+  const isPreScroll = isHome && !scrolled;
+
+  // Light pre-scroll: transparent over hero image
+  // Dark pre-scroll: bg-secondary (matches the warm dark hero left panel)
+  // After scroll (both): solid bg-background/90 with blur
+  const headerClass = isPreScroll
+    ? isDark
+      ? "border-transparent bg-secondary"
+      : "border-transparent bg-transparent"
+    : "border-border/60 bg-background/90 backdrop-blur-sm";
 
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300 ${
-          transparent
-            ? "border-transparent bg-transparent"
-            : "border-border/60 bg-background/90 backdrop-blur-sm"
-        }`}
+        className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300 ${headerClass}`}
       >
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-6 lg:px-8">
           {/* Wordmark */}
           <Link
             href="/"
-            className={`font-display text-lg font-light tracking-[0.35em] transition-colors ${
-              transparent ? "text-foreground" : "text-foreground"
-            }`}
+            className="font-display text-lg font-light tracking-[0.35em] transition-colors text-foreground"
             aria-label="Arachchi home"
           >
             arachchi

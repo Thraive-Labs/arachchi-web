@@ -355,6 +355,45 @@ export async function updateOrderStatusAction(
   return { success: "Order updated." };
 }
 
+// ── Users / Roles ─────────────────────────────────────────────────────────────
+
+async function requireAdmin() {
+  const authUser = await getUser();
+  if (!authUser) throw new Error("Unauthorized");
+  const [dbUser] = await db
+    .select({ role: users.role })
+    .from(users)
+    .where(eq(users.id, authUser.id))
+    .limit(1);
+  if (!dbUser || dbUser.role !== "admin") throw new Error("Forbidden");
+  return authUser;
+}
+
+export async function updateUserRoleAction(
+  prevState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  let currentAdmin;
+  try {
+    currentAdmin = await requireAdmin();
+  } catch {
+    return { error: "Unauthorized." };
+  }
+  const targetId = formData.get("userId") as string;
+  const role = formData.get("role") as string;
+  if (!targetId || !role) return { error: "Missing parameters." };
+  if (!["customer", "staff", "admin"].includes(role)) return { error: "Invalid role." };
+  if (targetId === currentAdmin.id) return { error: "You cannot change your own role." };
+
+  await db
+    .update(users)
+    .set({ role: role as "customer" | "staff" | "admin" })
+    .where(eq(users.id, targetId));
+
+  revalidatePath("/admin/customers");
+  return { success: "Role updated." };
+}
+
 // ── Inventory ─────────────────────────────────────────────────────────────────
 
 export async function updateStockAction(
