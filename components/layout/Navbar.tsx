@@ -73,7 +73,7 @@ export function Navbar({ role }: { role: UserRole }) {
       <header
         className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300 ${headerClass}`}
       >
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between pl-6 pr-12 lg:pl-8 lg:pr-20">
           {/* Wordmark — left */}
           <Link
             href="/"
@@ -105,17 +105,17 @@ export function Navbar({ role }: { role: UserRole }) {
               </ul>
             </nav>
 
-            {/* Thin vertical rule between nav and icons */}
+            {/* Thin vertical rule between nav and icons — hidden while search/theme are off */}
             <div
-              className={`hidden h-4 w-px md:block ${dividerClass}`}
+              className="hidden"
               aria-hidden="true"
             />
 
-            {/* Search */}
+            {/* Search — temporarily hidden */}
             <button
               onClick={() => setSearchOpen(true)}
               aria-label="Search"
-              className={`transition-colors ${mutedLinkClass}`}
+              className={`hidden transition-colors ${mutedLinkClass}`}
             >
               <svg
                 width="16"
@@ -131,8 +131,8 @@ export function Navbar({ role }: { role: UserRole }) {
               </svg>
             </button>
 
-            {/* Theme toggle — desktop only */}
-            <span className="hidden md:inline-flex md:items-center">
+            {/* Theme toggle — temporarily hidden */}
+            <span className="hidden">
               <ThemeToggle />
             </span>
 
