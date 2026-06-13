@@ -4,6 +4,41 @@ All notable changes are recorded here. Newest entries at the top.
 
 ---
 
+## 2026-06-13 — Homepage overhaul: bold/neutral redesign (session 5)
+
+### Motivation
+Client feedback: homepage felt too feminine. Redesigned for a neutral, bold, architectural luxury aesthetic.
+
+### Navbar (`components/layout/Navbar.tsx`, `components/layout/MobileMenu.tsx`)
+- Nav links simplified to: **Story** (→ `/about`), **Collection** (→ `/lookbook`), **Shop** (→ `/shop`)
+- Layout changed: logo on far left; all nav links + utility icons consolidated in one right-side group
+- Thin vertical rule separates nav links from utility icons on desktop
+- When floating over the hero carousel on the homepage, nav text becomes white for legibility over dark images
+
+### Hero (`components/storefront/HeroSection.tsx`)
+- Replaced static split-panel with a full-viewport Framer Motion crossfade carousel
+- 3 slides, auto-advancing every 6s; pauses on hover
+- Each slide: full-bleed image + left-to-right dark gradient overlay + large serif headline stacked line by line
+- Slide navigation: `01 / 03` counter + clickable indicator bars, bottom-right corner
+- Dropped rose accent color from headline text in favour of pure white
+
+### Story section (`components/storefront/BrandStatement.tsx`)
+- Bolder two-column layout: label column left (9px uppercase tracking), statement column right
+- Added horizontal rule accent
+- Expanded body copy for more voice
+
+### Collections (`components/storefront/FeaturedCollection.tsx`)
+- Replaced 3-column category grid with 4 full-width collection rows: Convergence, Zenith, Monolith, Vale
+- Layout per row: image left (60%), collection name + description + arrow link right (40%)
+- Numbered (01–04), large serif name, animated arrow on hover
+- Each row is a link to `/shop?collection=<name>`
+
+### Page composition (`app/(storefront)/page.tsx`)
+- Removed `EditorialMoment` (narrative now handled by BrandStatement)
+- Order: HeroSection → BrandStatement → FeaturedCollection → CuratedPicks → TrendingNow → LookbookTeaser → NewsletterSignup
+
+---
+
 ## 2026-05-11 — Admin polish, analytics, loading screen (session 4)
 
 ### Auth & role routing

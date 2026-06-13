@@ -11,7 +11,7 @@ export function TrendingNow({ products }: TrendingNowProps) {
 
   return (
     <section className="bg-secondary py-16 lg:py-24" aria-label="Trending now">
-      <div className="mx-auto max-w-[1440px] px-6 lg:px-8">
+      <div className="lg:px-32">
         <div className="mb-10 flex items-end justify-between">
           <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Trending now</p>
           <Link

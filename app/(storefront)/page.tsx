@@ -1,6 +1,5 @@
 import { BrandStatement } from "@/components/storefront/BrandStatement";
 import { CuratedPicks } from "@/components/storefront/CuratedPicks";
-import { EditorialMoment } from "@/components/storefront/EditorialMoment";
 import { FeaturedCollection } from "@/components/storefront/FeaturedCollection";
 import { HeroSection } from "@/components/storefront/HeroSection";
 import { LookbookTeaser } from "@/components/storefront/LookbookTeaser";
@@ -19,7 +18,6 @@ export default async function HomePage() {
       <HeroSection />
       <BrandStatement />
       <FeaturedCollection />
-      <EditorialMoment />
       <CuratedPicks products={featured} />
       <TrendingNow products={trending} />
       <LookbookTeaser />

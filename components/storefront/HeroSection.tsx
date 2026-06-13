@@ -1,102 +1,171 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const INTERVAL_MS = 5500;
+
+const slides = [
+  {
+    image:
+      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1400&q=85&fit=crop&crop=top",
+    season: "Autumn / Winter 2026",
+    headline: ["Dressed", "with", "intention."],
+    cta: { label: "Explore Collection", href: "/shop" },
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=1400&q=85&fit=crop",
+    season: "New Arrivals",
+    headline: ["Built", "to last", "a decade."],
+    cta: { label: "Shop Now", href: "/shop" },
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1400&q=85&fit=crop",
+    season: "The Edit",
+    headline: ["Less,", "considered", "more."],
+    cta: { label: "View Lookbook", href: "/lookbook" },
+  },
+];
 
 export function HeroSection() {
+  const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
+  // Tracks when the currently-displayed slide became active
+  const slideStartRef = useRef<number>(Date.now());
+
+  // Reset the start timestamp whenever the active slide changes
+  useEffect(() => {
+    slideStartRef.current = Date.now();
+  }, [current]);
+
+  // Schedule the next advance — resumes from where it left off after un-hover
+  useEffect(() => {
+    if (paused) return;
+    const elapsed = Date.now() - slideStartRef.current;
+    const remaining = Math.max(600, INTERVAL_MS - elapsed);
+    const id = setTimeout(
+      () => setCurrent((c) => (c + 1) % slides.length),
+      remaining,
+    );
+    return () => clearTimeout(id);
+  }, [paused, current]);
+
   return (
-    <section className="flex min-h-screen flex-col lg:flex-row" aria-label="Hero">
-      {/* ── Left: editorial text panel ── */}
-      <div className="relative flex w-full flex-col justify-end overflow-hidden bg-secondary px-8 pb-20 pt-32 lg:w-[54%] lg:px-20 lg:pb-28">
-
-        {/* Thin left accent bar */}
-        <div className="absolute left-0 top-0 h-full w-[3px] bg-accent/40" aria-hidden="true" />
-
-        {/* Large decorative watermark letter */}
-        <span
-          className="pointer-events-none absolute -right-6 bottom-0 select-none font-serif leading-none text-foreground/[0.05]"
-          style={{ fontSize: "clamp(14rem, 28vw, 26rem)" }}
-          aria-hidden="true"
+    <section
+      className="relative h-screen min-h-[640px] overflow-hidden bg-foreground"
+      aria-label="Hero"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* Image layer — crossfade */}
+      <AnimatePresence initial={false}>
+        <motion.div
+          key={current}
+          className="absolute inset-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
         >
-          A
-        </span>
+          <Image
+            src={slides[current].image}
+            alt=""
+            fill
+            priority={current === 0}
+            sizes="100vw"
+            className="object-cover"
+          />
+        </motion.div>
+      </AnimatePresence>
 
-        {/* Subtle top gradient fade */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-foreground/[0.03] to-transparent" aria-hidden="true" />
+      {/* Left-to-right gradient — keeps text legible */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.10) 100%)",
+        }}
+        aria-hidden="true"
+      />
+      {/* Bottom vignette */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-48"
+        style={{
+          background:
+            "linear-gradient(to top, rgba(0,0,0,0.40) 0%, transparent 100%)",
+        }}
+        aria-hidden="true"
+      />
 
-        {/* Collection tag */}
-        <div
-          className="anim-rise mb-10 flex items-center gap-4"
-          style={{ animationDelay: "0ms" }}
-        >
-          <div className="h-px w-10 bg-foreground/25" aria-hidden="true" />
-          <p className="text-[9px] tracking-[0.45em] uppercase text-muted-foreground">
-            Autumn / Winter 2026
-          </p>
-        </div>
-
-        {/* Main headline */}
-        <h1
-          className="anim-rise font-serif font-light leading-[1.04] tracking-tight text-foreground"
-          style={{
-            animationDelay: "120ms",
-            fontSize: "clamp(3.25rem, 5.5vw, 7rem)",
-          }}
-        >
-          Dressed
-          <br />
-          <em className="not-italic text-accent">with intention.</em>
-        </h1>
-
-        {/* Editorial copy */}
-        <p
-          className="anim-rise mt-7 max-w-[28ch] text-sm leading-[1.75] text-muted-foreground"
-          style={{ animationDelay: "260ms" }}
-        >
-          Quietly considered clothing for the deliberate wardrobe.
-          Made to last a decade, not a season.
-        </p>
-
-        {/* CTAs */}
-        <div
-          className="anim-rise mt-12 flex items-center gap-10"
-          style={{ animationDelay: "380ms" }}
-        >
-          <Link
-            href="/shop"
-            className="inline-block border border-foreground px-9 py-3.5 text-[10px] tracking-[0.25em] uppercase text-foreground transition-colors duration-200 hover:bg-foreground hover:text-background"
+      {/* Text content */}
+      <div className="absolute inset-0 flex flex-col justify-end px-8 pb-24 lg:px-20 lg:pb-32">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
           >
-            Explore the collection
-          </Link>
-          <Link
-            href="/lookbook"
-            className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground underline-offset-4 transition-opacity hover:opacity-60 hover:underline"
-          >
-            Lookbook
-          </Link>
-        </div>
+            {/* Season label */}
+            <div className="mb-8 flex items-center gap-4">
+              <div className="h-px w-8 bg-white/50" aria-hidden="true" />
+              <p className="text-[9px] tracking-[0.5em] uppercase text-white/65">
+                {slides[current].season}
+              </p>
+            </div>
 
-        {/* Scroll cue */}
-        <div
-          className="anim-rise mt-16 hidden lg:flex lg:flex-col lg:items-start lg:gap-3"
-          style={{ animationDelay: "900ms" }}
-          aria-hidden="true"
-        >
-          <div className="h-10 w-px bg-foreground/20" />
-          <span className="text-[8px] tracking-[0.3em] uppercase text-muted-foreground/60">Scroll</span>
-        </div>
+            {/* Headline */}
+            <h1
+              className="font-serif font-light leading-[0.93] tracking-tight text-white"
+              style={{ fontSize: "clamp(3.75rem, 8.5vw, 9rem)" }}
+            >
+              {slides[current].headline.map((line, i) => (
+                <span key={i} className="block">
+                  {line}
+                </span>
+              ))}
+            </h1>
+
+            {/* CTA */}
+            <div className="mt-12">
+              <Link
+                href={slides[current].cta.href}
+                className="inline-block border border-white/65 px-9 py-3.5 text-[10px] tracking-[0.3em] uppercase text-white transition-colors duration-200 hover:bg-white hover:text-foreground"
+              >
+                {slides[current].cta.label}
+              </Link>
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* ── Right: editorial image ── */}
-      <div className="relative h-[70vw] w-full lg:h-auto lg:w-[46%]">
-        <Image
-          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&q=85&fit=crop&crop=top"
-          alt=""
-          fill
-          sizes="(max-width: 1024px) 100vw, 46vw"
-          priority
-          className="object-cover"
-        />
-        {/* Subtle left-edge vignette where image meets text */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-secondary/30 to-transparent" aria-hidden="true" />
+      {/* Slide navigation — bottom right */}
+      <div className="absolute bottom-8 right-8 flex flex-col items-end gap-3 lg:right-20">
+        <span
+          className="font-mono text-[10px] tracking-[0.15em] text-white/40"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {String(current + 1).padStart(2, "0")} /{" "}
+          {String(slides.length).padStart(2, "0")}
+        </span>
+        <div className="flex items-center gap-2">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-px transition-all duration-300 ${
+                i === current ? "w-10 bg-white" : "w-5 bg-white/35"
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

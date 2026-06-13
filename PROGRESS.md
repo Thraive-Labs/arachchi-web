@@ -1,11 +1,19 @@
 # Arachchi - Current Progress
 
-_Last updated: 2026-05-11, 18:30 Toronto local time_
+_Last updated: 2026-06-13, Toronto local time_
 
 ## Current Phase
 Phase 7 (SEO, performance, security) — complete. Phase 8 is pre-launch ops only.
 
 ## Completed
+
+### Homepage overhaul (2026-06-13) — FINALISED
+- **Navbar**: nav links changed to Story / Collection / Shop; logo stays left; all links + utility icons grouped on right; white text when floating over hero
+- **Hero**: static split-panel replaced with full-viewport Framer Motion crossfade carousel (3 slides, 6s auto-advance, indicator bars)
+- **BrandStatement**: bolder two-column layout; dropped rose accent; expanded copy
+- **FeaturedCollection**: 4 named collection rows (Convergence, Zenith, Monolith, Vale) — image left (60%) / name right (40%) with animated arrow
+- **Page structure**: removed `EditorialMoment`; order is Hero → Story → Collections → CuratedPicks → TrendingNow → Lookbook → Newsletter
+- Build: `npx next build` clean, `npx tsc --noEmit` 0 errors
 - **Phase 1: Foundation** — full stack setup, schema, RLS, brand tokens, layout, auth, middleware
 - **Phase 2: Storefront browsing** — homepage, shop, product pages, cart drawer, view tracking, seed data
 - **Phase 3: Auth + Account** — login/register/forgot-password/reset-password, account dashboard, orders, wishlist, settings

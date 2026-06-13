@@ -13,10 +13,9 @@ import { logoutAction } from "@/app/actions/auth";
 import type { UserRole } from "@/app/(storefront)/layout";
 
 const navLinks = [
-  { label: "Shop",     href: "/shop"     },
-  { label: "Lookbook", href: "/lookbook" },
-  { label: "Journal",  href: "/journal"  },
-  { label: "About",    href: "/about"    },
+  { label: "Story",      href: "/about"    },
+  { label: "Collection", href: "/lookbook" },
+  { label: "Shop",       href: "/shop"     },
 ];
 
 export function Navbar({ role }: { role: UserRole }) {
@@ -41,17 +40,28 @@ export function Navbar({ role }: { role: UserRole }) {
 
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
-  const isPreScroll = isHome && !scrolled;
+  // On the homepage before scroll, the nav floats over the dark hero image
+  const isOverHero = isHome && !scrolled;
 
-  const headerClass = isPreScroll
+  const headerClass = isOverHero
     ? isDark
       ? "border-transparent bg-secondary"
       : "border-transparent bg-transparent"
     : "border-border/60 bg-background/90 backdrop-blur-sm";
 
+  // Force white text when floating over the dark carousel image
+  const activeLinkClass = isOverHero && !isDark
+    ? "text-white"
+    : "text-foreground";
+
+  const mutedLinkClass = isOverHero && !isDark
+    ? "text-white/65 hover:text-white"
+    : "text-foreground/70 hover:text-foreground";
+
+  const dividerClass = isOverHero && !isDark ? "bg-white/20" : "bg-border";
+
   const isLoggedIn = role !== null;
   const isAdminOrStaff = role === "admin" || role === "staff";
-  // Hide the account/dashboard link when already on that section
   const onAccountPage = pathname.startsWith("/account");
   const showAccountLink = isLoggedIn && !onAccountPage;
 
@@ -64,45 +74,60 @@ export function Navbar({ role }: { role: UserRole }) {
         className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300 ${headerClass}`}
       >
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-6 lg:px-8">
-          {/* Wordmark */}
+          {/* Wordmark — left */}
           <Link
             href="/"
-            className="font-display text-lg font-light tracking-[0.35em] transition-colors text-foreground"
+            className={`font-display text-lg font-light tracking-[0.35em] transition-colors ${activeLinkClass}`}
             aria-label="Arachchi home"
           >
             arachchi
           </Link>
 
-          {/* Desktop nav */}
-          <nav aria-label="Primary navigation" className="hidden md:block">
-            <ul className="flex items-center gap-8">
-              {navLinks.map(({ label, href }) => (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    className={`text-xs tracking-[0.2em] uppercase transition-colors duration-200 ${
-                      pathname.startsWith(href)
-                        ? "text-foreground"
-                        : "text-foreground/70 hover:text-foreground"
-                    }`}
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          {/* Right group: desktop nav + utility icons */}
+          <div className="flex items-center gap-5 sm:gap-6">
+            {/* Desktop nav links */}
+            <nav aria-label="Primary navigation" className="hidden md:block">
+              <ul className="flex items-center gap-8">
+                {navLinks.map(({ label, href }) => (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      className={`text-xs tracking-[0.2em] uppercase transition-colors duration-200 ${
+                        pathname.startsWith(href)
+                          ? activeLinkClass
+                          : mutedLinkClass
+                      }`}
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
 
-          {/* Utility icons */}
-          <div className="flex items-center gap-4 sm:gap-5">
+            {/* Thin vertical rule between nav and icons */}
+            <div
+              className={`hidden h-4 w-px md:block ${dividerClass}`}
+              aria-hidden="true"
+            />
+
             {/* Search */}
             <button
               onClick={() => setSearchOpen(true)}
               aria-label="Search"
-              className="text-foreground/70 transition-colors hover:text-foreground"
+              className={`transition-colors ${mutedLinkClass}`}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
-                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                aria-hidden
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
               </svg>
             </button>
 
@@ -111,13 +136,13 @@ export function Navbar({ role }: { role: UserRole }) {
               <ThemeToggle />
             </span>
 
-            {/* Account / Dashboard / Sign In — desktop only */}
+            {/* Account / Sign In — desktop only */}
             {isLoggedIn ? (
               <>
                 {showAccountLink && (
                   <Link
                     href={accountHref}
-                    className="hidden md:inline-flex md:items-center text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground"
+                    className={`hidden md:inline-flex md:items-center text-xs tracking-[0.15em] uppercase transition-colors ${mutedLinkClass}`}
                   >
                     {accountLabel}
                   </Link>
@@ -125,7 +150,7 @@ export function Navbar({ role }: { role: UserRole }) {
                 <form action={logoutAction} className="hidden md:inline-flex md:items-center">
                   <button
                     type="submit"
-                    className="text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground"
+                    className={`text-xs tracking-[0.15em] uppercase transition-colors ${mutedLinkClass}`}
                   >
                     Log Out
                   </button>
@@ -134,7 +159,7 @@ export function Navbar({ role }: { role: UserRole }) {
             ) : (
               <Link
                 href="/login"
-                className="hidden md:inline-flex md:items-center text-xs tracking-[0.15em] uppercase text-foreground/70 transition-colors hover:text-foreground"
+                className={`hidden md:inline-flex md:items-center text-xs tracking-[0.15em] uppercase transition-colors ${mutedLinkClass}`}
                 aria-label="Sign in"
               >
                 Sign In
@@ -147,7 +172,7 @@ export function Navbar({ role }: { role: UserRole }) {
             <button
               onClick={() => setMobileOpen(true)}
               aria-label="Open menu"
-              className="text-foreground/70 transition-colors hover:text-foreground md:hidden"
+              className={`transition-colors md:hidden ${mutedLinkClass}`}
             >
               <Menu size={20} />
             </button>

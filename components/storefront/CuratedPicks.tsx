@@ -10,7 +10,7 @@ export function CuratedPicks({ products }: CuratedPicksProps) {
   if (!products.length) return null;
 
   return (
-    <section className="mx-auto max-w-[1440px] px-6 py-16 lg:px-8 lg:py-24" aria-label="Curated picks">
+    <section className="py-16 lg:px-32 lg:py-24" aria-label="Curated picks">
       <div className="mb-10 flex items-end justify-between">
         <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Curated picks</p>
         <Link

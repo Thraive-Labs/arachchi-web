@@ -10,10 +10,9 @@ import { logoutAction } from "@/app/actions/auth";
 import type { UserRole } from "@/app/(storefront)/layout";
 
 const navLinks = [
-  { label: "Shop",     href: "/shop"     },
-  { label: "Lookbook", href: "/lookbook" },
-  { label: "Journal",  href: "/journal"  },
-  { label: "About",    href: "/about"    },
+  { label: "Story",      href: "/about"    },
+  { label: "Collection", href: "/lookbook" },
+  { label: "Shop",       href: "/shop"     },
 ];
 
 interface MobileMenuProps {
