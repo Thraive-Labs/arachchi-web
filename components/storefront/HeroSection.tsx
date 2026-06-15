@@ -9,40 +9,37 @@ const INTERVAL_MS = 5500;
 
 const slides = [
   {
-    image:
-      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1400&q=85&fit=crop&crop=top",
+    image: "/images/img1.jpeg",
+    objectFit: "contain" as const,
     season: "Autumn / Winter 2026",
     headline: ["Dressed", "with", "intention."],
     cta: { label: "Explore Collection", href: "/shop" },
   },
   {
-    image:
-      "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=1400&q=85&fit=crop",
+    image: "/images/img2.jpeg",
+    objectFit: "contain" as const,
     season: "New Arrivals",
     headline: ["Built", "to last", "a decade."],
     cta: { label: "Shop Now", href: "/shop" },
   },
   {
-    image:
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1400&q=85&fit=crop",
+    image: "/images/img3.jpeg",
+    objectFit: "contain" as const,
     season: "The Edit",
     headline: ["Less,", "considered", "more."],
-    cta: { label: "View Lookbook", href: "/lookbook" },
+    cta: { label: "View the Store", href: "/shop" },
   },
 ];
 
 export function HeroSection() {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
-  // Tracks when the currently-displayed slide became active
   const slideStartRef = useRef<number>(Date.now());
 
-  // Reset the start timestamp whenever the active slide changes
   useEffect(() => {
     slideStartRef.current = Date.now();
   }, [current]);
 
-  // Schedule the next advance — resumes from where it left off after un-hover
   useEffect(() => {
     if (paused) return;
     const elapsed = Date.now() - slideStartRef.current;
@@ -56,7 +53,7 @@ export function HeroSection() {
 
   return (
     <section
-      className="relative h-screen min-h-[640px] overflow-hidden bg-foreground"
+      className="relative h-screen min-h-[640px] overflow-hidden bg-black"
       aria-label="Hero"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -77,7 +74,7 @@ export function HeroSection() {
             fill
             priority={current === 0}
             sizes="100vw"
-            className="object-cover"
+            style={{ objectFit: slides[current].objectFit }}
           />
         </motion.div>
       </AnimatePresence>

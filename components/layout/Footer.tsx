@@ -44,7 +44,7 @@ export function Footer() {
               arachchi
             </Link>
             <p className="text-xs leading-relaxed text-muted-foreground max-w-[200px]">
-              Toronto-based luxury clothing — designed with intention.
+              luxury clothing brand based in ceylon - designed with intention.
             </p>
           </div>
 
