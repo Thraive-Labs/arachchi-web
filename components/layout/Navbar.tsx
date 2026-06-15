@@ -36,7 +36,7 @@ export function Navbar({ role }: { role: UserRole }) {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-zinc-700/40 bg-zinc-900">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-zinc-500/30 bg-zinc-600">
         <div className="flex h-16 items-center justify-between px-12 lg:px-20">
           {/* Wordmark */}
           <Link
