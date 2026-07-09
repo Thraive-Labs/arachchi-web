@@ -50,7 +50,7 @@ export default function ContactPage() {
 
       <div className="mt-12 border-t border-border pt-8 space-y-2 text-sm text-muted-foreground">
         <p>Email: <a href="mailto:hello@arachchi.com" className="text-foreground hover:underline">hello@arachchi.com</a></p>
-        <p>Based in Toronto, Ontario, Canada.</p>
+        <p>Based in Ceylon.</p>
       </div>
     </div>
   );

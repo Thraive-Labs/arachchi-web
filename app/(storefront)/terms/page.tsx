@@ -26,7 +26,7 @@ export default function TermsPage() {
         </section>
         <section>
           <h2 className="mb-3 text-xs tracking-[0.2em] uppercase text-foreground">Governing law</h2>
-          <p>These terms are governed by the laws of the Province of Ontario and the federal laws of Canada applicable therein.</p>
+          <p>These terms are governed by the laws of Ceylon.</p>
         </section>
         <section>
           <h2 className="mb-3 text-xs tracking-[0.2em] uppercase text-foreground">Contact</h2>

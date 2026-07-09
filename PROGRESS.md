@@ -1,11 +1,20 @@
 # Arachchi - Current Progress
 
-_Last updated: 2026-06-13, Toronto local time_
+_Last updated: 2026-07-10, Toronto local time_
 
 ## Current Phase
 Phase 7 (SEO, performance, security) — complete. Phase 8 is pre-launch ops only.
 
 ## Completed
+
+### Wordmark, nav, hero, Philosophy page, 12 new products (2026-07-10) — FINALISED
+- **Wordmark**: dropped wide `tracking-[0.35em]` letter-spacing from "arachchi" everywhere (Navbar, Footer, MobileMenu, auth layout) for a plainer, consistent treatment
+- **Navbar**: "Story" renamed to "Philosophy" (still `/about`); Footer's "About" link renamed to match; Cart icon now appears before Sign In
+- **Hero carousel**: slide 1/3 images+copy swapped, slide 2 headline changed to "From / luxury to / serenity", auto-advance sped up to 3.2s, manual prev/next arrow controls added, new brand photography (`img1.png`/`img2.png`/`img3.png`) with `objectFit: contain`
+- **Homepage**: removed "Our Story" (`BrandStatement`, deleted); "Store" (`CuratedPicks`) moved above "Collections"
+- **Philosophy page** (`/about`): rebuilt with top image, centered "arachchi" heading, full philosophy copy, centered closing tagline, newsletter retained
+- **12 new products** seeded via `scripts/seed-new-arrivals.ts` (additive, does not touch existing catalog) — see CHANGELOG for full list and image-sourcing/compression notes. Client-supplied source PNGs (322MB) compressed to ~6MB of JPEGs in `public/images/products/`.
+- Build: `npx tsc --noEmit` 0 errors; dev-server smoke test confirmed shop listing, product detail pages, and image paths all resolve
 
 ### Homepage overhaul (2026-06-13) — FINALISED
 - **Navbar**: nav links changed to Story / Collection / Shop; logo stays left; all links + utility icons grouped on right; white text when floating over hero
@@ -87,6 +96,7 @@ Phase 7 (SEO, performance, security) — complete. Phase 8 is pre-launch ops onl
 - Create `product-images` bucket in Supabase Storage, set to **public**
 - Run `npm run db:push` when pulling new schema changes
 - Add public SELECT RLS policies on read-only tables (see below)
+- Run `npx tsx scripts/seed-new-arrivals.ts` against any other environment's DB (staging/production) to bring the 12 new-arrival products seeded 2026-07-10 in sync — it was only run against local dev so far
 
 ## RLS Policies Required (run in Supabase SQL Editor)
 ```sql

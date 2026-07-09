@@ -10,7 +10,7 @@ export default function AuthLayout({
       <Link
         href="/"
         aria-label="Back to home"
-        className="absolute top-6 left-6 font-display text-base font-light tracking-[0.35em] text-foreground transition-opacity hover:opacity-60"
+        className="absolute top-6 left-6 font-display text-base font-light text-foreground transition-opacity hover:opacity-60"
       >
         arachchi
       </Link>

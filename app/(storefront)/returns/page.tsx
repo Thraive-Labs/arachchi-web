@@ -16,8 +16,8 @@ export default function ReturnsPage() {
           <ol className="list-decimal list-inside space-y-2">
             <li>Log in to your account and select the order you wish to return.</li>
             <li>Select the items and reason for return.</li>
-            <li>Print the prepaid return label (Canadian orders only).</li>
-            <li>Drop off at any Canada Post location.</li>
+            <li>Print the prepaid return label.</li>
+            <li>Drop off at any post office location.</li>
           </ol>
           <p className="mt-3">Guest purchasers can initiate a return by contacting us at <a href="mailto:returns@arachchi.com" className="text-foreground underline underline-offset-4">returns@arachchi.com</a> with your order number.</p>
         </section>

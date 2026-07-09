@@ -11,7 +11,7 @@ import { logoutAction } from "@/app/actions/auth";
 import type { UserRole } from "@/app/(storefront)/layout";
 
 const navLinks = [
-  { label: "Story",      href: "/about"    },
+  { label: "Philosophy", href: "/about"    },
   { label: "Collection", href: "/lookbook" },
   { label: "Shop",       href: "/shop"     },
 ];
@@ -41,7 +41,7 @@ export function Navbar({ role }: { role: UserRole }) {
           {/* Wordmark */}
           <Link
             href="/"
-            className={`font-display text-lg font-light tracking-[0.35em] transition-colors ${LINK_ACTIVE}`}
+            className={`font-display text-lg font-light transition-colors ${LINK_ACTIVE}`}
             aria-label="Arachchi home"
           >
             arachchi
@@ -86,6 +86,8 @@ export function Navbar({ role }: { role: UserRole }) {
               </svg>
             </button>
 
+            <CartIcon className={LINK_MUTED} />
+
             {/* Account / Sign In */}
             {isLoggedIn ? (
               <>
@@ -115,8 +117,6 @@ export function Navbar({ role }: { role: UserRole }) {
                 Sign In
               </Link>
             )}
-
-            <CartIcon className={LINK_MUTED} />
 
             {/* Hamburger — mobile only */}
             <button

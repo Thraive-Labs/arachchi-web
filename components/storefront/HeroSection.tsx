@@ -4,30 +4,31 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const INTERVAL_MS = 5500;
+const INTERVAL_MS = 3200;
 
 const slides = [
   {
-    image: "/images/img1.jpeg",
-    objectFit: "contain" as const,
-    season: "Autumn / Winter 2026",
-    headline: ["Dressed", "with", "intention."],
-    cta: { label: "Explore Collection", href: "/shop" },
-  },
-  {
-    image: "/images/img2.jpeg",
-    objectFit: "contain" as const,
-    season: "New Arrivals",
-    headline: ["Built", "to last", "a decade."],
-    cta: { label: "Shop Now", href: "/shop" },
-  },
-  {
-    image: "/images/img3.jpeg",
+    image: "/images/img3.png",
     objectFit: "contain" as const,
     season: "The Edit",
     headline: ["Less,", "considered", "more."],
     cta: { label: "View the Store", href: "/shop" },
+  },
+  {
+    image: "/images/img2.png",
+    objectFit: "contain" as const,
+    season: "New Arrivals",
+    headline: ["From", "luxury to", "serenity"],
+    cta: { label: "Shop Now", href: "/shop" },
+  },
+  {
+    image: "/images/img1.png",
+    objectFit: "contain" as const,
+    season: "Autumn / Winter 2026",
+    headline: ["Dressed", "with", "intention."],
+    cta: { label: "Explore Collection", href: "/shop" },
   },
 ];
 
@@ -140,6 +141,24 @@ export function HeroSection() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Prev / next arrow controls */}
+      <button
+        onClick={() =>
+          setCurrent((c) => (c - 1 + slides.length) % slides.length)
+        }
+        aria-label="Previous slide"
+        className="absolute left-4 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center text-white/60 transition-colors hover:text-white lg:left-8"
+      >
+        <ChevronLeft size={28} strokeWidth={1.25} />
+      </button>
+      <button
+        onClick={() => setCurrent((c) => (c + 1) % slides.length)}
+        aria-label="Next slide"
+        className="absolute right-4 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center text-white/60 transition-colors hover:text-white lg:right-8"
+      >
+        <ChevronRight size={28} strokeWidth={1.25} />
+      </button>
 
       {/* Slide navigation — bottom right */}
       <div className="absolute bottom-8 right-8 flex flex-col items-end gap-3 lg:right-20">

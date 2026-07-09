@@ -10,7 +10,7 @@ import { logoutAction } from "@/app/actions/auth";
 import type { UserRole } from "@/app/(storefront)/layout";
 
 const navLinks = [
-  { label: "Story",      href: "/about"    },
+  { label: "Philosophy", href: "/about"    },
   { label: "Collection", href: "/lookbook" },
   { label: "Shop",       href: "/shop"     },
 ];
@@ -70,7 +70,7 @@ export function MobileMenu({ isOpen, onClose, onSearchOpen, role }: MobileMenuPr
               <Link
                 href="/"
                 onClick={onClose}
-                className="font-display text-base font-light tracking-[0.35em] text-foreground"
+                className="font-display text-base font-light text-foreground"
               >
                 arachchi
               </Link>

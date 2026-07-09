@@ -8,7 +8,7 @@ export default function ShippingPage() {
       <h1 className="font-serif text-3xl font-light tracking-wide mb-10">Shipping</h1>
       <div className="space-y-8 text-sm leading-relaxed text-muted-foreground">
         <section>
-          <h2 className="mb-3 text-xs tracking-[0.2em] uppercase text-foreground">Canada</h2>
+          <h2 className="mb-3 text-xs tracking-[0.2em] uppercase text-foreground">Ceylon</h2>
           <p>Standard shipping (5–7 business days): Free on orders over $250 CAD. $15 CAD flat rate on orders under $250.</p>
           <p className="mt-2">Express shipping (2–3 business days): $25 CAD.</p>
           <p className="mt-2">Overnight (next business day, order by 12 pm ET): $45 CAD.</p>

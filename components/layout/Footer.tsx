@@ -22,7 +22,7 @@ const columns = [
   {
     heading: "Company",
     links: [
-      { label: "About", href: "/about" },
+      { label: "Philosophy", href: "/about" },
       { label: "Privacy policy", href: "/privacy" },
       { label: "Terms of service", href: "/terms" },
     ],
@@ -38,7 +38,7 @@ export function Footer() {
           <div className="space-y-4">
             <Link
               href="/"
-              className="font-display text-lg font-light tracking-[0.35em] text-foreground"
+              className="font-display text-lg font-light text-foreground"
               aria-label="Arachchi home"
             >
               arachchi
@@ -74,7 +74,7 @@ export function Footer() {
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} Arachchi. All rights reserved.
           </p>
-          <p className="text-xs text-muted-foreground">Toronto, Canada</p>
+          <p className="text-xs text-muted-foreground">Proudly from Ceylon</p>
         </div>
       </div>
     </footer>

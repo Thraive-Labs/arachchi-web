@@ -4,6 +4,38 @@ All notable changes are recorded here. Newest entries at the top.
 
 ---
 
+## 2026-07-10 — Wordmark simplification, hero/nav rework, Philosophy page, 12 new products (session 6)
+
+### Wordmark (`Navbar.tsx`, `Footer.tsx`, `MobileMenu.tsx`, `app/(auth)/layout.tsx`)
+- Removed the wide `tracking-[0.35em]` letter-spacing from the "arachchi" wordmark everywhere it appears — plainer, more consistent lowercase treatment site-wide (Nunito light weight retained)
+
+### Navbar (`components/layout/Navbar.tsx`, `components/layout/MobileMenu.tsx`, `components/layout/Footer.tsx`)
+- Nav label "Story" renamed to **Philosophy** (still routes to `/about`); Footer's "About" link renamed to match
+- Cart icon and Sign In now swapped — Cart appears before Sign In / account links
+
+### Hero carousel (`components/storefront/HeroSection.tsx`)
+- Slide 1 and slide 3 swapped (image + original copy moved together); slide 2 keeps its image but headline changed to "From / luxury to / serenity"
+- Auto-advance sped up from 5.5s to 3.2s
+- Added manual prev/next arrow controls (left/right chevrons) alongside the existing dot indicators
+- Swapped in new brand photography (`public/images/img1.png`, `img2.png`, `img3.png`, replacing the old placeholder JPEGs) — `objectFit` kept as `contain` so the full image always shows against the black letterbox background
+
+### Homepage restructure (`app/(storefront)/page.tsx`)
+- Removed the "Our Story" section (`BrandStatement.tsx`, deleted — content superseded by the new Philosophy page)
+- "Store" section (`CuratedPicks`) moved up to appear right after the hero, ahead of "Collections"
+
+### Philosophy page (`app/(storefront)/about/page.tsx`)
+- Rebuilt from scratch: brand image at top (`public/images/philosophy.png`), centered "arachchi" heading, full philosophy statement copy, centered closing line ("Don't just wear it. Be an arachchi."), newsletter signup retained at the bottom
+- Metadata updated to "Philosophy — Arachchi"
+
+### 12 new products added (`scripts/seed-new-arrivals.ts`)
+- Client supplied ~68 product photos (AI-generated garment renders) with no naming key beyond filenames; reviewed images and wrote names/descriptions/pricing/materials from what's visible in each photo
+- Products: Ceylon Puff-Sleeve Dress, Tiered Linen Midi Dress, Signature Structural Sweater, Signature Lounge Set, Beach Club Crochet Dress, Weekend Oversized Set, Signature Polo Shirt, Signature Hoodie, Woven Pocket Tee, Classic Pocket Tee, Essential Crew Tee, Ceylon Logo Tee
+- Each product: 1–5 gallery images, 5 size variants (XS–XL), category + tag assignments, material/care/origin metadata — all tagged `new-arrivals`
+- Source images (6.2–15MB PNGs each, 322MB total) resized to max width 1400px and compressed to JPEG (quality 80) via `sharp` before committing — final footprint ~6MB in `public/images/products/<slug>/`
+- Script is additive/idempotent: only touches these 12 slugs (upserts categories/tags, re-seeds images/variants/tags scoped to each product's own id) — does not clear the rest of the catalog like `scripts/seed.ts` does
+
+---
+
 ## 2026-06-13 — Homepage overhaul: bold/neutral redesign (session 5)
 
 ### Motivation

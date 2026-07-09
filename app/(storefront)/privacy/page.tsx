@@ -10,7 +10,7 @@ export default function PrivacyPage() {
       <div className="space-y-8 text-sm leading-relaxed text-muted-foreground">
         <section>
           <h2 className="mb-3 text-xs tracking-[0.2em] uppercase text-foreground">Who we are</h2>
-          <p>Arachchi Inc. (&ldquo;Arachchi&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;) is a company incorporated in Ontario, Canada. Our website is arachchi.com. This policy describes how we collect, use, and protect your personal information in accordance with Canada&apos;s Personal Information Protection and Electronic Documents Act (PIPEDA).</p>
+          <p>Arachchi Inc. (&ldquo;Arachchi&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;) is a company incorporated in Ceylon. Our website is arachchi.com. This policy describes how we collect, use, and protect your personal information.</p>
         </section>
         <section>
           <h2 className="mb-3 text-xs tracking-[0.2em] uppercase text-foreground">What we collect</h2>
