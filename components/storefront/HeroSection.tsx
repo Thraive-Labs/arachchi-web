@@ -10,7 +10,7 @@ const INTERVAL_MS = 3200;
 
 const slides = [
   {
-    image: "/images/img3.png",
+    image: "/images/img1.png",
     objectFit: "contain" as const,
     season: "be the guy with",
     headline: ["Less,", "considered", "more."],
@@ -24,7 +24,7 @@ const slides = [
     cta: { label: "Shop Now", href: "/shop" },
   },
   {
-    image: "/images/img1.png",
+    image: "/images/img3.png",
     objectFit: "contain" as const,
     season: "red car",
     headline: ["Dressed", "with", "intention."],
