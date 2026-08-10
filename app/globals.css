@@ -44,20 +44,6 @@
   background: hsl(20 14% 8%);
 }
 
-/* ── Splash blossom petals ───────────────────────────────────────────── */
-@keyframes blossom-fall {
-  0%   { transform: translateY(-8vh) translateX(0)            rotate(0deg);   opacity: 0;    }
-  12%  {                                                                        opacity: 0.65; }
-  88%  {                                                                        opacity: 0.45; }
-  100% { transform: translateY(108vh) translateX(var(--drift)) rotate(var(--spin)); opacity: 0; }
-}
-
-.splash-blossom {
-  position: absolute;
-  pointer-events: none;
-  animation: blossom-fall var(--dur) var(--delay) linear forwards;
-}
-
 /* ── Tailwind theme mapping ───────────────────────────────────────────── */
 @theme inline {
   /* Fonts — actual font values set via CSS vars in root layout */

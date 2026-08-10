@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Geist, Nunito } from "next/font/google";
+import { SplashController } from "@/components/animations/SplashController";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -86,6 +87,10 @@ export default function RootLayout({
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
           />
+          <div id="splash" aria-hidden="true">
+            <span>arachchi</span>
+          </div>
+          <SplashController />
           {children}
         </ThemeProvider>
       </body>
