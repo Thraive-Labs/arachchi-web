@@ -11,9 +11,8 @@ import { logoutAction } from "@/app/actions/auth";
 import type { UserRole } from "@/app/(storefront)/layout";
 
 const navLinks = [
-  { label: "Philosophy", href: "/about"       },
-  { label: "Collection", href: "/#collections" },
-  { label: "Shop",       href: "/shop"        },
+  { label: "Philosophy", href: "/about" },
+  { label: "Shop",       href: "/shop"  },
 ];
 
 const LINK_ACTIVE = "text-white";
