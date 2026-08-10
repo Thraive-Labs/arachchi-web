@@ -49,8 +49,8 @@ export function HeroSection() {
         <div>
           {/* Headline */}
           <h1
-            className="font-serif font-light leading-[0.93] tracking-tight text-white"
-            style={{ fontSize: "clamp(3.75rem, 8.5vw, 9rem)" }}
+            className="font-serif font-light leading-[0.93] tracking-tight text-white break-words"
+            style={{ fontSize: "clamp(2.75rem, 8.5vw, 9rem)" }}
           >
             {hero.headline.map((line, i) => (
               <span key={i} className="block">

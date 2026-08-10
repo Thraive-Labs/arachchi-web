@@ -101,9 +101,9 @@ export function ProductCard({
           )}
         </Link>
 
-        {/* Color swatches — appear on hover, vertical stack top-left; click swaps the card image */}
+        {/* Color swatches — always visible on touch (no hover there), hover-revealed on desktop; click swaps the card image */}
         {hasColors && (
-          <div className="absolute left-2 top-2 z-10 flex flex-col gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+          <div className="absolute left-2 top-2 z-10 flex flex-col gap-2 opacity-100 transition-opacity duration-200 lg:gap-1.5 lg:opacity-0 lg:group-hover:opacity-100">
             {colors!.map((c) => (
               <button
                 key={c.color}
@@ -112,7 +112,7 @@ export function ProductCard({
                 aria-label={`View in ${c.color}`}
                 aria-pressed={activeColor?.color === c.color}
                 title={c.color}
-                className={`h-4 w-4 rounded-full border shadow-sm transition-transform hover:scale-110 ${
+                className={`h-5 w-5 rounded-full border shadow-sm transition-transform hover:scale-110 lg:h-4 lg:w-4 ${
                   activeColor?.color === c.color ? "border-foreground ring-1 ring-foreground" : "border-white/80"
                 }`}
                 style={{ backgroundColor: c.colorHex ?? "#ccc" }}
@@ -121,9 +121,9 @@ export function ProductCard({
           </div>
         )}
 
-        {/* Quick-add overlay — appears on hover, sibling to the Link (no nesting issue) */}
+        {/* Quick-add overlay — always visible on touch (no hover there), hover-revealed on desktop; sibling to the Link (no nesting issue) */}
         {hasQuickAdd && (
-          <div className="absolute inset-x-0 bottom-0 z-10 bg-background/92 px-3 pb-3 pt-2 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:opacity-100">
+          <div className="absolute inset-x-0 bottom-0 z-10 bg-background/92 px-3 pb-3 pt-2 opacity-100 backdrop-blur-[2px] transition-opacity duration-200 lg:opacity-0 lg:group-hover:opacity-100">
             <p className="mb-1.5 text-[9px] tracking-[0.2em] uppercase text-muted-foreground">
               Quick add
             </p>

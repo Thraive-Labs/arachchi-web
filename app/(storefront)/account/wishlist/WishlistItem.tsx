@@ -49,7 +49,7 @@ export function WishlistItem({
         onClick={handleRemove}
         disabled={isPending}
         aria-label={`Remove ${productName} from wishlist`}
-        className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center bg-background/80 text-muted-foreground opacity-0 backdrop-blur-sm transition-all group-hover:opacity-100 hover:text-foreground disabled:opacity-50"
+        className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center bg-background/80 text-muted-foreground opacity-100 backdrop-blur-sm transition-all hover:text-foreground disabled:opacity-50 lg:opacity-0 lg:group-hover:opacity-100"
       >
         <X size={12} />
       </button>
