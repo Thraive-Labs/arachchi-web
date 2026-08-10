@@ -30,6 +30,12 @@ export interface CardVariant {
   priceCents: number;
 }
 
+export interface CardColor {
+  color: string;
+  colorHex: string | null;
+  image: string;
+}
+
 // Fetches primary + secondary image URLs for an array of product rows.
 // Two queries: one for the products, one for their images — no correlated subquery.
 async function attachImages<T extends { id: string }>(rows: T[]) {
@@ -82,6 +88,53 @@ async function attachVariants<T extends { id: string }>(rows: T[]) {
     byProduct.set(v.productId, arr);
   }
   return rows.map((r) => ({ ...r, variants: byProduct.get(r.id) ?? [] }));
+}
+
+// Builds a per-color swatch list (color, hex, image) from color-tagged variants + images.
+// Falls back to the product's primary image when no image is tagged for that color.
+async function attachColors<T extends { id: string; primaryImage: string | null }>(rows: T[]) {
+  if (!rows.length) {
+    return rows.map((r) => ({ ...r, colors: [] as CardColor[] }));
+  }
+  const ids = rows.map((r) => r.id);
+
+  const [variantRows, imageRows] = await Promise.all([
+    db
+      .select({ productId: productVariants.productId, color: productVariants.color, colorHex: productVariants.colorHex })
+      .from(productVariants)
+      .where(and(inArray(productVariants.productId, ids), eq(productVariants.isActive, true))),
+    db
+      .select({ productId: productImages.productId, color: productImages.color, url: productImages.url })
+      .from(productImages)
+      .where(inArray(productImages.productId, ids))
+      .orderBy(asc(productImages.position)),
+  ]);
+
+  const imageByProductColor = new Map<string, string>();
+  for (const img of imageRows) {
+    if (!img.color) continue;
+    const key = `${img.productId}:${img.color}`;
+    if (!imageByProductColor.has(key)) imageByProductColor.set(key, img.url);
+  }
+
+  const colorsByProduct = new Map<string, CardColor[]>();
+  const seen = new Set<string>();
+  for (const v of variantRows) {
+    if (!v.color) continue;
+    const key = `${v.productId}:${v.color}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const arr = colorsByProduct.get(v.productId) ?? [];
+    arr.push({ color: v.color, colorHex: v.colorHex, image: imageByProductColor.get(key) ?? "" });
+    colorsByProduct.set(v.productId, arr);
+  }
+
+  return rows.map((r) => ({
+    ...r,
+    colors: (colorsByProduct.get(r.id) ?? [])
+      .map((c) => ({ ...c, image: c.image || r.primaryImage || "" }))
+      .filter((c) => c.image),
+  }));
 }
 
 export async function getProducts(filters: ProductFilters = {}) {
@@ -148,7 +201,8 @@ export async function getProducts(filters: ProductFilters = {}) {
   ]);
 
   const withImages = await attachImages(rawItems);
-  const items = await attachVariants(withImages);
+  const withVariants = await attachVariants(withImages);
+  const items = await attachColors(withVariants);
   return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
@@ -208,7 +262,7 @@ export async function getFeaturedProducts(limit = 8) {
     .where(and(eq(products.isActive, true), eq(products.isFeatured, true)))
     .orderBy(desc(products.createdAt))
     .limit(limit);
-  return attachVariants(await attachImages(rows));
+  return attachColors(await attachVariants(await attachImages(rows)));
 }
 
 export async function getTrendingProducts(limit = 8) {
@@ -223,7 +277,7 @@ export async function getTrendingProducts(limit = 8) {
     .from(products)
     .where(and(eq(products.isActive, true), eq(products.isTrending, true)))
     .limit(limit);
-  return attachVariants(await attachImages(rows));
+  return attachColors(await attachVariants(await attachImages(rows)));
 }
 
 export async function getRelatedProducts(
@@ -264,7 +318,7 @@ export async function getRelatedProducts(
       .limit(limit);
   }
 
-  return attachVariants(await attachImages(rows));
+  return attachColors(await attachVariants(await attachImages(rows)));
 }
 
 export async function getCategories() {

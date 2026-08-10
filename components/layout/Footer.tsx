@@ -5,8 +5,7 @@ const columns = [
     heading: "Shop",
     links: [
       { label: "All products", href: "/shop" },
-      { label: "Lookbook", href: "/lookbook" },
-      { label: "Journal", href: "/journal" },
+      { label: "Collections", href: "/#collections" },
     ],
   },
   {

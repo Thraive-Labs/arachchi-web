@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { formatPriceCents } from "@/lib/utils";
 import { useCartStore } from "@/stores/cart";
-import type { CardVariant } from "@/lib/db/queries/products";
+import type { CardVariant, CardColor } from "@/lib/db/queries/products";
 
 interface ProductCardProps {
   id: string;
@@ -18,6 +18,7 @@ interface ProductCardProps {
   secondaryImage?: string | null;
   priority?: boolean;
   variants?: CardVariant[];
+  colors?: CardColor[];
 }
 
 export function ProductCard({
@@ -30,12 +31,17 @@ export function ProductCard({
   secondaryImage,
   priority = false,
   variants,
+  colors,
 }: ProductCardProps) {
   const [addedId, setAddedId] = useState<string | null>(null);
+  const [activeColor, setActiveColor] = useState<CardColor | null>(null);
   const addItem = useCartStore((s) => s.addItem);
 
   const sizedVariants = variants?.filter((v) => v.size) ?? [];
   const hasQuickAdd = sizedVariants.length > 0 && primaryImage !== null;
+  const hasColors = (colors?.length ?? 0) > 1;
+  const displayImage = activeColor?.image || primaryImage;
+  const showSecondaryHover = !!secondaryImage && !activeColor;
 
   function handleQuickAdd(v: CardVariant) {
     if (!primaryImage || v.stockQuantity === 0) return;
@@ -70,21 +76,23 @@ export function ProductCard({
           tabIndex={-1}
           aria-hidden="true"
         >
-          {primaryImage ? (
+          {displayImage ? (
             <Image
-              src={primaryImage}
+              src={displayImage}
               alt={name}
               fill
               sizes="(max-width: 768px) 50vw, 25vw"
               priority={priority}
-              className="object-cover transition-opacity duration-300 group-hover:opacity-0"
+              className={`object-cover transition-opacity duration-300 ${
+                showSecondaryHover ? "group-hover:opacity-0" : ""
+              }`}
             />
           ) : (
             <div className="absolute inset-0 bg-muted" />
           )}
-          {secondaryImage && (
+          {showSecondaryHover && (
             <Image
-              src={secondaryImage}
+              src={secondaryImage!}
               alt={`${name} — alternate view`}
               fill
               sizes="(max-width: 768px) 50vw, 25vw"
@@ -92,6 +100,26 @@ export function ProductCard({
             />
           )}
         </Link>
+
+        {/* Color swatches — appear on hover, vertical stack top-left; click swaps the card image */}
+        {hasColors && (
+          <div className="absolute left-2 top-2 z-10 flex flex-col gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            {colors!.map((c) => (
+              <button
+                key={c.color}
+                type="button"
+                onClick={() => setActiveColor(activeColor?.color === c.color ? null : c)}
+                aria-label={`View in ${c.color}`}
+                aria-pressed={activeColor?.color === c.color}
+                title={c.color}
+                className={`h-4 w-4 rounded-full border shadow-sm transition-transform hover:scale-110 ${
+                  activeColor?.color === c.color ? "border-foreground ring-1 ring-foreground" : "border-white/80"
+                }`}
+                style={{ backgroundColor: c.colorHex ?? "#ccc" }}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Quick-add overlay — appears on hover, sibling to the Link (no nesting issue) */}
         {hasQuickAdd && (

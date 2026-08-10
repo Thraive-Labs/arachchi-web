@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { saveProductAction, uploadProductImageAction, deleteProductImageAction, setPrimaryImageAction, saveVariantAction, type ProductFormData } from "@/app/actions/admin";
+import { saveProductAction, uploadProductImageAction, deleteProductImageAction, setPrimaryImageAction, setImageColorAction, saveVariantAction, type ProductFormData } from "@/app/actions/admin";
 import { slugify } from "@/lib/utils";
 import { Plus, Trash2, Star } from "lucide-react";
 import type { Category, Tag, ProductVariant, ProductImage, Product } from "@/lib/db/schema";
@@ -35,6 +35,7 @@ export function ProductForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [images, setImages] = useState<ProductImage[]>(initialImages);
+  const [uploadColor, setUploadColor] = useState("");
 
   const isNew = !productId;
 
@@ -134,6 +135,8 @@ export function ProductForm({
     if (!file || !productId) return;
     const formData = new FormData();
     formData.append("image", file);
+    const color = uploadColor.trim();
+    if (color) formData.append("color", color);
     const result = await uploadProductImageAction(productId, formData);
     if (result.error) {
       setError(result.error);
@@ -147,9 +150,11 @@ export function ProductForm({
           alt: "",
           position: prev.length,
           isPrimary: prev.length === 0,
+          color: color || null,
           mediaType: "image" as const,
         },
       ]);
+      setUploadColor("");
     }
     e.target.value = "";
   }
@@ -289,38 +294,68 @@ export function ProductForm({
           <p className="mb-4 border-b border-border pb-2 text-xs tracking-[0.2em] uppercase text-foreground">Images</p>
           <div className="flex flex-wrap gap-4 mb-4">
             {images.map((img) => (
-              <div key={img.id} className="relative">
-                <Image src={img.url} alt={img.alt} width={100} height={125} className="object-cover border border-border" />
-                {img.isPrimary && (
-                  <span className="absolute top-1 left-1 bg-foreground text-background text-[10px] px-1">Primary</span>
-                )}
-                <div className="absolute top-1 right-1 flex gap-1">
-                  {!img.isPrimary && (
-                    <form action={setPrimaryImageAction}>
+              <div key={img.id} className="w-[100px] space-y-1">
+                <div className="relative">
+                  <Image src={img.url} alt={img.alt} width={100} height={125} className="object-cover border border-border" />
+                  {img.isPrimary && (
+                    <span className="absolute top-1 left-1 bg-foreground text-background text-[10px] px-1">Primary</span>
+                  )}
+                  <div className="absolute top-1 right-1 flex gap-1">
+                    {!img.isPrimary && (
+                      <form action={setPrimaryImageAction}>
+                        <input type="hidden" name="imageId" value={img.id} />
+                        <input type="hidden" name="productId" value={productId ?? ""} />
+                        <button type="submit" title="Set as primary" className="bg-background border border-border p-0.5 hover:bg-muted">
+                          <Star size={10} />
+                        </button>
+                      </form>
+                    )}
+                    <form action={deleteProductImageAction}>
                       <input type="hidden" name="imageId" value={img.id} />
-                      <input type="hidden" name="productId" value={productId ?? ""} />
-                      <button type="submit" title="Set as primary" className="bg-background border border-border p-0.5 hover:bg-muted">
-                        <Star size={10} />
+                      <button type="submit" title="Delete" className="bg-background border border-border p-0.5 hover:text-red-600">
+                        <Trash2 size={10} />
                       </button>
                     </form>
-                  )}
-                  <form action={deleteProductImageAction}>
-                    <input type="hidden" name="imageId" value={img.id} />
-                    <button type="submit" title="Delete" className="bg-background border border-border p-0.5 hover:text-red-600">
-                      <Trash2 size={10} />
-                    </button>
-                  </form>
+                  </div>
                 </div>
+                <form
+                  action={setImageColorAction}
+                  onSubmit={(e) => {
+                    const input = e.currentTarget.elements.namedItem("color") as HTMLInputElement;
+                    setImages((prev) => prev.map((p) => (p.id === img.id ? { ...p, color: input.value.trim() || null } : p)));
+                  }}
+                >
+                  <input type="hidden" name="imageId" value={img.id} />
+                  <input type="hidden" name="productId" value={productId ?? ""} />
+                  <input
+                    name="color"
+                    defaultValue={img.color ?? ""}
+                    onBlur={(e) => e.currentTarget.form?.requestSubmit()}
+                    placeholder="Color"
+                    title="Tag this image with a color name (matches a variant's Color field)"
+                    className="w-full border border-border bg-transparent px-1.5 py-1 text-[10px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+                  />
+                </form>
               </div>
             ))}
           </div>
-          <label className="flex items-center gap-2 cursor-pointer border border-dashed border-border px-4 py-3 text-xs text-muted-foreground hover:border-foreground hover:text-foreground transition-colors w-fit">
-            <Plus size={14} />
-            Upload image
-            <input type="file" accept="image/*" onChange={handleImageUpload} className="sr-only" />
-          </label>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 cursor-pointer border border-dashed border-border px-4 py-3 text-xs text-muted-foreground hover:border-foreground hover:text-foreground transition-colors w-fit">
+              <Plus size={14} />
+              Upload image
+              <input type="file" accept="image/*" onChange={handleImageUpload} className="sr-only" />
+            </label>
+            <input
+              value={uploadColor}
+              onChange={(e) => setUploadColor(e.target.value)}
+              placeholder="Color (optional)"
+              title="Tag the next uploaded image with a color name"
+              className="border border-border bg-transparent px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+            />
+          </div>
           <p className="mt-1 text-xs text-muted-foreground">
             Requires the <code className="font-mono">product-images</code> bucket to be created and set to public in Supabase Storage.
+            Tag an image with a color name matching a variant&apos;s Color field to show it as that color&apos;s swatch on the shop card.
           </p>
         </section>
       )}
@@ -364,6 +399,7 @@ function VariantsSection({
               <th className="pb-2 text-left font-normal">SKU</th>
               <th className="pb-2 text-left font-normal">Size</th>
               <th className="pb-2 text-left font-normal">Color</th>
+              <th className="pb-2 text-left font-normal">Hex</th>
               <th className="pb-2 text-right font-normal">Price</th>
               <th className="pb-2 text-right font-normal">Stock</th>
               <th className="pb-2 text-center font-normal">Active</th>
@@ -386,6 +422,7 @@ function VariantsSection({
             <Field label="SKU"><input name="sku" required className={inputCls} /></Field>
             <Field label="Size"><input name="size" className={inputCls} /></Field>
             <Field label="Color"><input name="color" className={inputCls} /></Field>
+            <Field label="Color hex"><input name="colorHex" type="text" placeholder="#000000" className={inputCls} /></Field>
             <Field label="Price (CAD)"><input name="priceCents" type="number" min="1" required className={inputCls} placeholder="Cents (e.g. 12500)" /></Field>
             <Field label="Stock"><input name="stockQuantity" type="number" min="0" defaultValue="0" className={inputCls} /></Field>
             <Field label="Active">
@@ -420,6 +457,9 @@ function VariantRow({ variant: v, productId }: { variant: ProductVariant; produc
         <input type="hidden" name="size" value={v.size ?? ""} />
         <input type="hidden" name="color" value={v.color ?? ""} />
         <input type="hidden" name="isActive" value={String(v.isActive)} />
+        <td className="py-2 pr-2">
+          <input name="colorHex" type="text" defaultValue={v.colorHex ?? ""} placeholder="#000000" className="w-20 border border-border bg-transparent px-2 py-1 text-xs focus:outline-none" />
+        </td>
         <td className="py-2 pr-2">
           <input name="priceCents" type="number" defaultValue={v.priceCents} min="1" className="w-24 border border-border bg-transparent px-2 py-1 text-xs focus:outline-none" />
         </td>

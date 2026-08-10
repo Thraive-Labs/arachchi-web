@@ -18,8 +18,6 @@ export type {
   OrderItem,
   Discount,
   Wishlist,
-  JournalArticle,
-  LookbookEntry,
   NewsletterSubscriber,
   AuditLog,
 } from "@/lib/db/schema";

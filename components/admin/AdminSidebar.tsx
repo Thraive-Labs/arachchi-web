@@ -9,8 +9,6 @@ import {
   ShoppingBag,
   Users,
   Boxes,
-  BookOpen,
-  Camera,
   Layers,
   Percent,
   BarChart2,
@@ -31,8 +29,6 @@ const navItems = [
   { href: "/admin/inventory",  label: "Inventory", icon: Boxes      },
   { href: "/admin/bundles",    label: "Bundles",   icon: Layers     },
   { href: "/admin/discounts",  label: "Discounts", icon: Percent    },
-  { href: "/admin/journal",    label: "Journal",   icon: BookOpen   },
-  { href: "/admin/lookbook",   label: "Lookbook",  icon: Camera     },
   { href: "/admin/settings",   label: "Settings",  icon: Settings   },
 ];
 

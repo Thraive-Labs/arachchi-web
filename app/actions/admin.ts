@@ -134,6 +134,7 @@ const variantSchema = z.object({
   sku: z.string().min(1, "SKU is required").max(100),
   size: z.string().max(20).nullable().optional(),
   color: z.string().max(50).nullable().optional(),
+  colorHex: z.string().max(20).nullable().optional(),
   priceCents: z.number().int().positive(),
   stockQuantity: z.number().int().min(0),
   isActive: z.boolean(),
@@ -155,6 +156,7 @@ export async function saveVariantAction(
     sku: formData.get("sku"),
     size: formData.get("size") || null,
     color: formData.get("color") || null,
+    colorHex: formData.get("colorHex") || null,
     priceCents: Number(formData.get("priceCents")),
     stockQuantity: Number(formData.get("stockQuantity")),
     isActive: formData.get("isActive") === "true",
@@ -230,15 +232,31 @@ export async function uploadProductImageAction(
 
   const isPrimary = existing.length === 0;
   const alt = formData.get("alt") as string | null;
+  const color = (formData.get("color") as string | null)?.trim() || null;
 
   const [inserted] = await db
     .insert(productImages)
-    .values({ productId, url: publicUrl, alt: alt ?? "", position: existing.length, isPrimary })
+    .values({ productId, url: publicUrl, alt: alt ?? "", position: existing.length, isPrimary, color })
     .returning({ id: productImages.id });
 
   revalidatePath(`/admin/products/${productId}`);
   revalidatePath(`/product/${productId}`);
   return { url: publicUrl, id: inserted?.id };
+}
+
+export async function setImageColorAction(formData: FormData): Promise<void> {
+  try {
+    await requireStaff();
+  } catch {
+    return;
+  }
+  const imageId = formData.get("imageId") as string;
+  const productId = formData.get("productId") as string;
+  const color = (formData.get("color") as string | null)?.trim() || null;
+  if (!imageId) return;
+
+  await db.update(productImages).set({ color }).where(eq(productImages.id, imageId));
+  revalidatePath(`/admin/products/${productId}`);
 }
 
 export async function deleteProductImageAction(formData: FormData): Promise<void> {

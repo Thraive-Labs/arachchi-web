@@ -120,7 +120,7 @@ function CollectionImageCarousel({
 
 export function FeaturedCollection() {
   return (
-    <section className="py-16 lg:px-32 lg:py-24" aria-label="Collections">
+    <section id="collections" className="py-16 lg:px-32 lg:py-24" aria-label="Collections">
       {/* Section header */}
       <div className="border-t border-foreground/12 pb-10 pt-8">
         <h2 className="text-sm tracking-[0.4em] uppercase text-muted-foreground">

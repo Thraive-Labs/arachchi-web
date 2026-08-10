@@ -258,6 +258,7 @@ export const productImages = pgTable("product_images", {
   alt: text("alt").notNull(),
   position: integer("position").default(0).notNull(),
   isPrimary: boolean("is_primary").default(false).notNull(),
+  color: text("color"),
   mediaType: text("media_type")
     .$type<"image" | "video">()
     .default("image")

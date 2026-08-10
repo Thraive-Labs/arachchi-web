@@ -2,7 +2,6 @@ import { CuratedPicks } from "@/components/storefront/CuratedPicks";
 import { FeaturedCollection } from "@/components/storefront/FeaturedCollection";
 import { HeroSection } from "@/components/storefront/HeroSection";
 import { NewsletterSignup } from "@/components/storefront/NewsletterSignup";
-import { TrendingNow } from "@/components/storefront/TrendingNow";
 import { getTrendingProducts } from "@/lib/db/queries/products";
 
 export default async function HomePage() {
@@ -11,9 +10,8 @@ export default async function HomePage() {
   return (
     <>
       <HeroSection />
-      <CuratedPicks />
+      <CuratedPicks products={trending} />
       <FeaturedCollection />
-      <TrendingNow products={trending} />
       <NewsletterSignup />
     </>
   );

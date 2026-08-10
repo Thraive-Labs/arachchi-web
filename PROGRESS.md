@@ -1,11 +1,19 @@
 # Arachchi - Current Progress
 
-_Last updated: 2026-07-10, Toronto local time_
+_Last updated: 2026-08-10, Toronto local time_
 
 ## Current Phase
 Phase 7 (SEO, performance, security) — complete. Phase 8 is pre-launch ops only.
 
 ## Completed
+
+### Static hero + Store grid, Lookbook/Journal removed, shop card color swatches (2026-08-10) — FINALISED
+- **Hero**: single static slide (no carousel, no autoplay, no arrows/dots); "season" label line removed entirely
+- **Homepage Store section**: `CuratedPicks` rebuilt as a static grid using the same `ProductCard` as the shop page, populated with real trending products (`isTrending = true`) instead of a hardcoded image list; the separate "Trending Now" section and `ProductCarousel` component were deleted as redundant
+- **Lookbook and Journal removed site-wide**: storefront + admin routes, nav links (Navbar/MobileMenu/Footer/AdminSidebar), `LookbookTeaser`/`EditorialMoment` components, `lib/db/queries/content.ts`, journal/lookbook server actions, sitemap entries, seed data all removed. `journal_articles`/`lookbook_entries` DB tables intentionally left in place (unused, not dropped). Navbar "Collection" link now points to a new `#collections` anchor on the homepage instead of `/lookbook`
+- **Shop card color swatches**: new `color` column on `product_images` (pushed to local dev DB); `attachColors` query helper builds per-product color→image swatch data; `ProductCard` shows vertical color swatches on hover (top-left) and swaps the card image on click; admin `ProductForm` supports tagging images with a color and setting a variant's color hex
+- 8 existing products seeded with `isTrending = true` and two color variants each (Black/Ivory, reusing existing product photography) via new `scripts/seed-colors.ts` — **needs re-running against any other environment's DB**, same as `seed-new-arrivals.ts`
+- Build: `npx tsc --noEmit` 0 errors, `npx next build` clean; smoke-tested homepage Store grid (hover swatches + image swap confirmed), shop grid, and `/lookbook` → 404 in dev browser
 
 ### Wordmark, nav, hero, Philosophy page, 12 new products (2026-07-10) — FINALISED
 - **Wordmark**: dropped wide `tracking-[0.35em]` letter-spacing from "arachchi" everywhere (Navbar, Footer, MobileMenu, auth layout) for a plainer, consistent treatment
@@ -80,6 +88,7 @@ Phase 7 (SEO, performance, security) — complete. Phase 8 is pre-launch ops onl
 - `bundles` table
 - `bundle_products` table
 - `discounts` table (if not already pushed)
+- `color` column on `product_images` (2026-08-10 — already pushed to local dev)
 
 ## Deferred to Phase 8 (pre-launch ops — not code)
 - Paste `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` into `.env.local` and Vercel
@@ -97,6 +106,7 @@ Phase 7 (SEO, performance, security) — complete. Phase 8 is pre-launch ops onl
 - Run `npm run db:push` when pulling new schema changes
 - Add public SELECT RLS policies on read-only tables (see below)
 - Run `npx tsx scripts/seed-new-arrivals.ts` against any other environment's DB (staging/production) to bring the 12 new-arrival products seeded 2026-07-10 in sync — it was only run against local dev so far
+- Run `npx tsx scripts/seed-colors.ts` against any other environment's DB to bring the trending flags + color variants seeded 2026-08-10 in sync — it was only run against local dev so far
 
 ## RLS Policies Required (run in Supabase SQL Editor)
 ```sql

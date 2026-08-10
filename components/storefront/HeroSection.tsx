@@ -1,84 +1,29 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const INTERVAL_MS = 3200;
-
-const slides = [
-  {
-    image: "/images/img1.png",
-    objectFit: "contain" as const,
-    season: "be the guy with",
-    headline: ["Less,", "considered", "more."],
-    cta: { label: "View the Store", href: "/shop" },
-  },
-  {
-    image: "/images/img2.png",
-    objectFit: "contain" as const,
-    season: "be the  lady with the gwagon",
-    headline: ["From", "luxury to", "serenity"],
-    cta: { label: "Shop Now", href: "/shop" },
-  },
-  {
-    image: "/images/img3.png",
-    objectFit: "contain" as const,
-    season: "red car",
-    headline: ["Dressed", "with", "intention."],
-    cta: { label: "Explore Collection", href: "/shop" },
-  },
-];
+const hero = {
+  image: "/images/img1.png",
+  headline: ["Less,", "considered", "more."],
+  cta: { label: "View the Store", href: "/shop" },
+};
 
 export function HeroSection() {
-  const [current, setCurrent] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const slideStartRef = useRef<number>(Date.now());
-
-  useEffect(() => {
-    slideStartRef.current = Date.now();
-  }, [current]);
-
-  useEffect(() => {
-    if (paused) return;
-    const elapsed = Date.now() - slideStartRef.current;
-    const remaining = Math.max(600, INTERVAL_MS - elapsed);
-    const id = setTimeout(
-      () => setCurrent((c) => (c + 1) % slides.length),
-      remaining,
-    );
-    return () => clearTimeout(id);
-  }, [paused, current]);
-
   return (
     <section
       className="relative h-screen min-h-[640px] overflow-hidden bg-black"
       aria-label="Hero"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
     >
-      {/* Image layer — crossfade */}
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={current}
-          className="absolute inset-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
-        >
-          <Image
-            src={slides[current].image}
-            alt=""
-            fill
-            priority={current === 0}
-            sizes="100vw"
-            style={{ objectFit: slides[current].objectFit }}
-          />
-        </motion.div>
-      </AnimatePresence>
+      {/* Image layer */}
+      <div className="absolute inset-0">
+        <Image
+          src={hero.image}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          style={{ objectFit: "contain" }}
+        />
+      </div>
 
       {/* Left-to-right gradient — keeps text legible */}
       <div
@@ -101,86 +46,28 @@ export function HeroSection() {
 
       {/* Text content */}
       <div className="absolute inset-0 flex flex-col justify-end px-8 pb-24 lg:px-20 lg:pb-32">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={current}
-            initial={{ opacity: 0, y: 28 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+        <div>
+          {/* Headline */}
+          <h1
+            className="font-serif font-light leading-[0.93] tracking-tight text-white"
+            style={{ fontSize: "clamp(3.75rem, 8.5vw, 9rem)" }}
           >
-            {/* Season label */}
-            <div className="mb-8 flex items-center gap-4">
-              <div className="h-px w-8 bg-white/50" aria-hidden="true" />
-              <p className="text-[9px] tracking-[0.5em] uppercase text-white/65">
-                {slides[current].season}
-              </p>
-            </div>
+            {hero.headline.map((line, i) => (
+              <span key={i} className="block">
+                {line}
+              </span>
+            ))}
+          </h1>
 
-            {/* Headline */}
-            <h1
-              className="font-serif font-light leading-[0.93] tracking-tight text-white"
-              style={{ fontSize: "clamp(3.75rem, 8.5vw, 9rem)" }}
+          {/* CTA */}
+          <div className="mt-12">
+            <Link
+              href={hero.cta.href}
+              className="inline-block border border-white/65 px-9 py-3.5 text-[10px] tracking-[0.3em] uppercase text-white transition-colors duration-200 hover:bg-white hover:text-foreground"
             >
-              {slides[current].headline.map((line, i) => (
-                <span key={i} className="block">
-                  {line}
-                </span>
-              ))}
-            </h1>
-
-            {/* CTA */}
-            <div className="mt-12">
-              <Link
-                href={slides[current].cta.href}
-                className="inline-block border border-white/65 px-9 py-3.5 text-[10px] tracking-[0.3em] uppercase text-white transition-colors duration-200 hover:bg-white hover:text-foreground"
-              >
-                {slides[current].cta.label}
-              </Link>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Prev / next arrow controls */}
-      <button
-        onClick={() =>
-          setCurrent((c) => (c - 1 + slides.length) % slides.length)
-        }
-        aria-label="Previous slide"
-        className="absolute left-4 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center text-white/60 transition-colors hover:text-white lg:left-8"
-      >
-        <ChevronLeft size={28} strokeWidth={1.25} />
-      </button>
-      <button
-        onClick={() => setCurrent((c) => (c + 1) % slides.length)}
-        aria-label="Next slide"
-        className="absolute right-4 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center text-white/60 transition-colors hover:text-white lg:right-8"
-      >
-        <ChevronRight size={28} strokeWidth={1.25} />
-      </button>
-
-      {/* Slide navigation — bottom right */}
-      <div className="absolute bottom-8 right-8 flex flex-col items-end gap-3 lg:right-20">
-        <span
-          className="font-mono text-[10px] tracking-[0.15em] text-white/40"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {String(current + 1).padStart(2, "0")} /{" "}
-          {String(slides.length).padStart(2, "0")}
-        </span>
-        <div className="flex items-center gap-2">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrent(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              className={`h-px transition-all duration-300 ${
-                i === current ? "w-10 bg-white" : "w-5 bg-white/35"
-              }`}
-            />
-          ))}
+              {hero.cta.label}
+            </Link>
+          </div>
         </div>
       </div>
     </section>

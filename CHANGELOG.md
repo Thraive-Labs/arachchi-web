@@ -4,6 +4,32 @@ All notable changes are recorded here. Newest entries at the top.
 
 ---
 
+## 2026-08-10 — Static hero + Store grid, Lookbook/Journal removed, shop card color swatches (session 7)
+
+### Hero (`components/storefront/HeroSection.tsx`)
+- Replaced the 3-slide auto-advancing carousel with a single static slide (image, headline, CTA only) — removed autoplay, prev/next arrows, dot indicators, and the small "season" label line entirely
+
+### Homepage Store section (`components/storefront/CuratedPicks.tsx`, `app/(storefront)/page.tsx`)
+- Replaced the rAF auto-scrolling strip of hardcoded collection images with a static grid using the same `ProductCard` component as the shop page
+- Now populated with real trending products (`isTrending = true`) from the database instead of a hardcoded image list
+- Removed the separate "Trending Now" section (`TrendingNow.tsx`, deleted) and its carousel component (`components/product/ProductCarousel.tsx`, deleted) since Store now covers the same purpose without duplication
+
+### Lookbook and Journal removed site-wide
+- Deleted storefront routes (`/lookbook`, `/lookbook/[slug]`, `/journal`, `/journal/[slug]`) and admin routes (`/admin/lookbook*`, `/admin/journal*`)
+- Removed nav links from `Navbar.tsx`, `MobileMenu.tsx`, `Footer.tsx`, and `AdminSidebar.tsx`; removed dead components `LookbookTeaser.tsx` and `EditorialMoment.tsx`
+- Removed `lib/db/queries/content.ts`, journal/lookbook server actions from `app/actions/content.ts` (newsletter action retained), sitemap entries, `types/index.ts` exports, and seed data in `scripts/seed.ts`
+- `journal_articles` and `lookbook_entries` DB tables intentionally left in the schema (unused, non-destructive) — not dropped
+- Navbar/MobileMenu "Collection" link, which previously pointed at `/lookbook`, now points to a new `#collections` anchor on the homepage (`FeaturedCollection.tsx`); Footer's "Collections" link updated to match
+
+### Shop card color swatches (new feature)
+- Added a nullable `color` column to `product_images` (schema + `npm run db:push` already applied to local dev) so an image can be tagged with a color name matching a variant's existing `color` field
+- `lib/db/queries/products.ts`: new `attachColors` step builds a per-product `colors: { color, colorHex, image }[]` list from color-tagged variants + images (falls back to the product's primary image if no image is tagged for that color); wired into `getProducts`, `getFeaturedProducts`, `getTrendingProducts`, `getRelatedProducts`
+- `ProductCard.tsx`: hovering a card with 2+ colors reveals a vertical stack of color swatches (colorHex circles) top-left of the image; clicking a swatch swaps the displayed image to that color's photo without navigating
+- Admin (`app/admin/products/ProductForm.tsx`, `app/actions/admin.ts`): image upload now accepts an optional color tag, existing images get an inline color-tag input, variant rows/new-variant form gained a "Color hex" field (`setImageColorAction` added, `saveVariantAction` now accepts `colorHex`)
+- `scripts/seed-colors.ts` (new, additive/idempotent): marks 8 existing products as trending and gives each two color variants (Black/Ivory) reusing the product's own existing photography, tagging one image per color — run against local dev DB. **Needs re-running against any other environment's DB**, same as `seed-new-arrivals.ts`.
+
+---
+
 ## 2026-07-10 — Wordmark simplification, hero/nav rework, Philosophy page, 12 new products (session 6)
 
 ### Wordmark (`Navbar.tsx`, `Footer.tsx`, `MobileMenu.tsx`, `app/(auth)/layout.tsx`)
