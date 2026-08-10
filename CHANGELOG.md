@@ -4,6 +4,23 @@ All notable changes are recorded here. Newest entries at the top.
 
 ---
 
+## 2026-08-10 — Navbar cleanup, mobile/touch hardening, colors on every product (session 8)
+
+### Navbar (`components/layout/Navbar.tsx`, `components/layout/MobileMenu.tsx`)
+- Removed the "Collection" link (pointed at the new `#collections` homepage anchor) from both desktop and mobile nav — Philosophy and Shop remain
+
+### Mobile/touch responsiveness (`components/product/ProductCard.tsx`, `app/(storefront)/account/wishlist/WishlistItem.tsx`, `components/storefront/HeroSection.tsx`, `app/globals.css`)
+- `ProductCard` color swatches, quick-add overlay, and the wishlist "remove" button were hover-only (`opacity-0 group-hover:opacity-100`) and therefore completely unreachable on touch devices (no hover state) — now always visible below `lg`, hover-revealed at `lg+` as before
+- Hero headline `clamp()` min-bound lowered (3.75rem → 2.75rem) + `break-words` added so the unbreakable "considered" line can't get clipped by the hero's `overflow-hidden` on narrow phones
+- Added `html { overflow-x: hidden }` site-wide as a defensive safety net
+- Not visually verified at real mobile/tablet viewport widths — see PROGRESS.md note on the browser-resize tool limitation this session
+
+### Colors on every product (`scripts/seed-colors-remaining.ts`, new)
+- Extended the color-swatch feature to all 18 remaining products (previously only 8 had color data) — same Black/Ivory two-color pattern reusing each product's own existing photography
+- `essential-crew-tee` only has one photo, so both colors point at the same image (swatch shows, click has no visual effect)
+
+---
+
 ## 2026-08-10 — Static hero + Store grid, Lookbook/Journal removed, shop card color swatches (session 7)
 
 ### Hero (`components/storefront/HeroSection.tsx`)

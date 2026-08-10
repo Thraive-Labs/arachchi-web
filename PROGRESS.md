@@ -13,7 +13,14 @@ Phase 7 (SEO, performance, security) — complete. Phase 8 is pre-launch ops onl
 - **Lookbook and Journal removed site-wide**: storefront + admin routes, nav links (Navbar/MobileMenu/Footer/AdminSidebar), `LookbookTeaser`/`EditorialMoment` components, `lib/db/queries/content.ts`, journal/lookbook server actions, sitemap entries, seed data all removed. `journal_articles`/`lookbook_entries` DB tables intentionally left in place (unused, not dropped). Navbar "Collection" link now points to a new `#collections` anchor on the homepage instead of `/lookbook`
 - **Shop card color swatches**: new `color` column on `product_images` (pushed to local dev DB); `attachColors` query helper builds per-product color→image swatch data; `ProductCard` shows vertical color swatches on hover (top-left) and swaps the card image on click; admin `ProductForm` supports tagging images with a color and setting a variant's color hex
 - 8 existing products seeded with `isTrending = true` and two color variants each (Black/Ivory, reusing existing product photography) via new `scripts/seed-colors.ts` — **needs re-running against any other environment's DB**, same as `seed-new-arrivals.ts`
+- All remaining 18 products (every product in the catalog now) given two color variants (Black/Ivory) via new `scripts/seed-colors-remaining.ts` — does not touch `isTrending`. One product (`essential-crew-tee`) only had a single photo, so both colors are tagged to that same image (swatches show, click has no visual effect since there's no second photo). **Needs re-running against any other environment's DB.**
 - Build: `npx tsc --noEmit` 0 errors, `npx next build` clean; smoke-tested homepage Store grid (hover swatches + image swap confirmed), shop grid, and `/lookbook` → 404 in dev browser
+
+### Mobile/touch responsiveness hardening (2026-08-10) — FINALISED
+- `ProductCard` color swatches + quick-add overlay, and the wishlist "remove" button, were hover-only (`opacity-0 group-hover:opacity-100`) and therefore unreachable on touch devices. Now always visible below `lg`, hover-revealed at `lg+` as before
+- Hero headline `clamp()` min-bound lowered (3.75rem → 2.75rem) + `break-words` added so the single-word "considered" line can't get clipped by the hero section's `overflow-hidden` on narrow phones
+- Added `html { overflow-x: hidden }` as a site-wide safety net
+- Note: could not visually verify at real mobile/tablet viewport widths this session — the browser automation tool's window-resize isn't taking effect in this environment (stays at ~1920px regardless of requested size). Fixes are code-reviewed and reasoned through Tailwind breakpoints, not pixel-verified on an actual small screen.
 
 ### Wordmark, nav, hero, Philosophy page, 12 new products (2026-07-10) — FINALISED
 - **Wordmark**: dropped wide `tracking-[0.35em]` letter-spacing from "arachchi" everywhere (Navbar, Footer, MobileMenu, auth layout) for a plainer, consistent treatment
