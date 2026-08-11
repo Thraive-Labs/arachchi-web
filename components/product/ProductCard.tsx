@@ -35,13 +35,22 @@ export function ProductCard({
 }: ProductCardProps) {
   const [addedId, setAddedId] = useState<string | null>(null);
   const [activeColor, setActiveColor] = useState<CardColor | null>(null);
+  const [previewColor, setPreviewColor] = useState<CardColor | null>(null);
   const addItem = useCartStore((s) => s.addItem);
 
-  const sizedVariants = variants?.filter((v) => v.size) ?? [];
-  const hasQuickAdd = sizedVariants.length > 0 && primaryImage !== null;
   const hasColors = (colors?.length ?? 0) > 1;
-  const displayImage = activeColor?.image || primaryImage;
-  const showSecondaryHover = !!secondaryImage && !activeColor;
+  const shownColor = previewColor || activeColor;
+  const displayImage = shownColor?.image || primaryImage;
+  const showSecondaryHover = !!secondaryImage && !shownColor;
+
+  // Variants carry one row per size *per color* — restrict quick-add to the
+  // color currently on screen (falling back to the first/default color) so
+  // sizes don't repeat once for every colorway.
+  const currentColorName = shownColor?.color ?? colors?.[0]?.color ?? null;
+  const sizedVariants = (variants ?? []).filter(
+    (v) => v.size && (currentColorName === null || v.color === currentColorName || v.color === null),
+  );
+  const hasQuickAdd = sizedVariants.length > 0 && primaryImage !== null;
 
   function handleQuickAdd(v: CardVariant) {
     if (!primaryImage || v.stockQuantity === 0) return;
@@ -51,7 +60,7 @@ export function ProductCard({
       productSlug: slug,
       productName: name,
       variantLabel: v.size ?? "One size",
-      image: primaryImage,
+      image: displayImage ?? primaryImage,
       priceCents: v.priceCents,
       quantity: 1,
     });
@@ -109,11 +118,15 @@ export function ProductCard({
                 key={c.color}
                 type="button"
                 onClick={() => setActiveColor(activeColor?.color === c.color ? null : c)}
+                onMouseEnter={() => setPreviewColor(c)}
+                onMouseLeave={() => setPreviewColor(null)}
+                onFocus={() => setPreviewColor(c)}
+                onBlur={() => setPreviewColor(null)}
                 aria-label={`View in ${c.color}`}
                 aria-pressed={activeColor?.color === c.color}
                 title={c.color}
                 className={`h-5 w-5 rounded-full border shadow-sm transition-transform hover:scale-110 lg:h-4 lg:w-4 ${
-                  activeColor?.color === c.color ? "border-foreground ring-1 ring-foreground" : "border-white/80"
+                  shownColor?.color === c.color ? "border-foreground ring-1 ring-foreground" : "border-white/80"
                 }`}
                 style={{ backgroundColor: c.colorHex ?? "#ccc" }}
               />

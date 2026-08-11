@@ -3,9 +3,9 @@ import Image from "next/image";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 
 export const metadata: Metadata = {
-  title: "Philosophy — Arachchi",
+  title: "Philosophy | Arachchi",
   description:
-    "Quiet luxury. Engineered precision. The philosophy behind Arachchi — where Ceylon's textile heritage meets the structural precision of our Toronto studio.",
+    "Quiet luxury. Engineered precision. The philosophy behind Arachchi, where Ceylon's textile heritage meets the structural precision of our Toronto studio.",
 };
 
 export default function AboutPage() {
@@ -16,7 +16,7 @@ export default function AboutPage() {
         <div className="relative h-full w-full overflow-hidden">
           <Image
             src="/images/philosophy.png"
-            alt="Arachchi — engineered precision"
+            alt="Arachchi, engineered precision"
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 1024px"
@@ -35,7 +35,7 @@ export default function AboutPage() {
           <p>
             Our commitment to the craft is the culmination of decades spent in
             quiet pursuit of the perfect garment. We view fashion not as an
-            exercise in trend, but as a discipline — a rigorous practice of
+            exercise in trend, but as a discipline: a rigorous practice of
             editing, refining, and engineering.
           </p>
           <p>
@@ -44,10 +44,10 @@ export default function AboutPage() {
             precision of our Toronto studio.
           </p>
           <p>
-            From Ceylon, we inherit a deep respect for the tactile — an
+            From Ceylon, we inherit a deep respect for the tactile: an
             understanding of how fiber, hand, and patience create something
             that truly lasts. From Toronto, we adopt an architectural
-            approach to utility — designing garments that are built to
+            approach to utility, designing garments that are built to
             thrive in the demanding pace of the urban landscape.
           </p>
           <p>

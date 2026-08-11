@@ -4,6 +4,32 @@ All notable changes are recorded here. Newest entries at the top.
 
 ---
 
+## 2026-08-11 — Real product photography, hover interactions, Philosophy copy cleanup (session 9)
+
+### Philosophy page (`app/(storefront)/about/page.tsx`)
+- Removed all em dashes from the page's copy (title, meta description, image alt, body paragraphs), rephrased around them instead of just deleting the character
+
+### Real catalog photography replaces the placeholder catalog (`scripts/seed-new-arrivals.ts`, `scripts/process-new-arrival-photos.ts` new)
+- The client's real product photography (`Zip file to send to sl/`, 70 images numbered #1-#12) was catalogued, matched 1:1 against the 12 existing "new arrival" products (same names/descriptions/prices from the 2026-07-10 session), and processed into `public/images/products/<slug>/` — `scripts/process-new-arrival-photos.ts` (new) compresses/resizes the source PNGs with sharp (~484MB source → ~7MB of JPEGs)
+- `seed-new-arrivals.ts` reworked: `ImageDef` now carries an optional `color`; each product's `colors: {name, hex}[]` drives real size×color variant generation (previously 5 colorless size variants); every product's first image is a non-worn flat/ghost-mannequin shot, second is a worn/lifestyle shot where photography allows
+- All 12 products now have 1-6 real colorways each (up from the placeholder 2-color Black/Ivory scheme) — colors and counts vary per product based on what was actually photographed (e.g. Ceylon Puff-Sleeve Dress: White/Green; Signature Structural Sweater: Black/Cream/Olive Green/Burgundy/Chocolate/Navy)
+- The 14 other catalog products (not among the 12 new arrivals) are now soft-deleted (`is_active = false`) by the same script — shop and homepage only show the 12 real products. Soft delete rather than hard delete to preserve order-history FK integrity
+- **Needs re-running against any other environment's DB** (staging/production), same as prior seed scripts
+
+### Shop card hover interactions (`components/product/ProductCard.tsx`)
+- Color swatches now preview on hover (`onMouseEnter`/`onMouseLeave`/focus/blur) instead of requiring a click — swatch hover takes priority over the existing worn-image-on-card-hover crossfade, and reverts to it when the pointer leaves the swatch but stays on the card; click-to-select is retained underneath for touch devices where hover doesn't exist
+- The pre-existing worn-image-on-hover crossfade (position-1 `secondaryImage`) now actually shows a person wearing the garment for every product, since the new seed data places a worn/lifestyle shot in that slot
+
+### Fix: quick-add sizes repeating once per color (`lib/db/queries/products.ts`, `components/product/ProductCard.tsx`)
+- The real-color reseed above gives every product one variant row per size *per color* (e.g. 4 colors × 5 sizes = 20 rows), but the shop card's quick-add just listed every row's size with no color filter, so "XS S M L XL" repeated once per colorway
+- `CardVariant` now carries `color`; `ProductCard` filters quick-add to the color currently shown on the card (hovered/selected swatch, falling back to the default color) instead of listing every variant unfiltered. Quick-add's cart snapshot image now matches the color shown (previously always used the default primary image regardless of selected color)
+
+### Fix: homepage Store section showing fewer than 8 tiles (`lib/db/queries/products.ts`)
+- `getTrendingProducts(limit)` only queried `isTrending = true` products; only 6 of the 12 real products carry that flag (inherited from the original 2026-07-10 placeholder data), so the homepage Store grid rendered 6 tiles instead of 8
+- Now backfills the remainder with the newest other active products (deduped, ordered by `createdAt desc`) whenever fewer than `limit` products are trending, so the grid always shows a full 8 regardless of how many products happen to be flagged trending
+
+---
+
 ## 2026-08-10 — Navbar cleanup, mobile/touch hardening, colors on every product (session 8)
 
 ### Navbar (`components/layout/Navbar.tsx`, `components/layout/MobileMenu.tsx`)

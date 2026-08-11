@@ -2,7 +2,7 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 import { drizzle } from "drizzle-orm/node-postgres";
-import { eq } from "drizzle-orm";
+import { eq, notInArray } from "drizzle-orm";
 import { Pool } from "pg";
 import {
   categories,
@@ -13,7 +13,8 @@ import {
   productTags,
 } from "../lib/db/schema";
 
-type ImageDef = { file: string; alt: string };
+type ImageDef = { file: string; alt: string; color?: string };
+type ColorDef = { name: string; hex: string };
 
 type ProductDef = {
   slug: string;
@@ -26,6 +27,7 @@ type ProductDef = {
   isTrending: boolean;
   tagSlugs: string[];
   metadata: Record<string, string>;
+  colors: ColorDef[];
   images: ImageDef[];
 };
 
@@ -43,11 +45,16 @@ const productData: ProductDef[] = [
     isTrending: true,
     tagSlugs: ["new-arrivals", "summer-2026"],
     metadata: { material: "100% Washed Linen", care: "Machine wash cold, line dry", origin: "Ceylon" },
+    colors: [
+      { name: "White", hex: "#f5f3ee" },
+      { name: "Green", hex: "#5c6b3f" },
+    ],
     images: [
-      { file: "1.jpg", alt: "Ceylon Puff-Sleeve Dress — white" },
-      { file: "2.jpg", alt: "Ceylon Puff-Sleeve Dress — green" },
-      { file: "3.jpg", alt: "Ceylon Puff-Sleeve Dress — worn, editorial" },
-      { file: "4.jpg", alt: "Ceylon Puff-Sleeve Dress — worn, alternate view" },
+      { file: "1.jpg", alt: "Ceylon Puff-Sleeve Dress, white", color: "White" },
+      { file: "2.jpg", alt: "Ceylon Puff-Sleeve Dress, worn" },
+      { file: "3.jpg", alt: "Ceylon Puff-Sleeve Dress, green", color: "Green" },
+      { file: "4.jpg", alt: "Ceylon Puff-Sleeve Dress, worn, editorial" },
+      { file: "5.jpg", alt: "Ceylon Puff-Sleeve Dress, worn, editorial black and white" },
     ],
   },
   {
@@ -63,11 +70,20 @@ const productData: ProductDef[] = [
     isTrending: true,
     tagSlugs: ["new-arrivals", "summer-2026"],
     metadata: { material: "100% Belgian Linen", care: "Machine wash cold, line dry", origin: "Ceylon" },
+    colors: [
+      { name: "White", hex: "#f5f3ee" },
+      { name: "Cream", hex: "#ece2c8" },
+      { name: "Grey", hex: "#9a9a94" },
+      { name: "Olive Green", hex: "#86937a" },
+      { name: "Burgundy", hex: "#6b2632" },
+    ],
     images: [
-      { file: "1.jpg", alt: "Tiered Linen Midi Dress — white" },
-      { file: "2.jpg", alt: "Tiered Linen Midi Dress — olive, worn" },
-      { file: "3.jpg", alt: "Tiered Linen Midi Dress — grey" },
-      { file: "4.jpg", alt: "Tiered Linen Midi Dress — burgundy" },
+      { file: "1.jpg", alt: "Tiered Linen Midi Dress, white", color: "White" },
+      { file: "2.jpg", alt: "Tiered Linen Midi Dress, worn, olive" },
+      { file: "3.jpg", alt: "Tiered Linen Midi Dress, cream", color: "Cream" },
+      { file: "4.jpg", alt: "Tiered Linen Midi Dress, grey", color: "Grey" },
+      { file: "5.jpg", alt: "Tiered Linen Midi Dress, olive green", color: "Olive Green" },
+      { file: "6.jpg", alt: "Tiered Linen Midi Dress, burgundy", color: "Burgundy" },
     ],
   },
   {
@@ -83,11 +99,26 @@ const productData: ProductDef[] = [
     isTrending: true,
     tagSlugs: ["new-arrivals", "gift-guide"],
     metadata: { material: "78% Merino Wool, 22% Nylon", care: "Hand wash cold or dry clean", origin: "Ceylon" },
+    colors: [
+      { name: "Black", hex: "#1c1c1c" },
+      { name: "Cream", hex: "#e4dcc8" },
+      { name: "Olive Green", hex: "#6b7a4f" },
+      { name: "Burgundy", hex: "#5c2430" },
+      { name: "Chocolate", hex: "#8a6f63" },
+      { name: "Navy", hex: "#38455a" },
+    ],
     images: [
-      { file: "1.jpg", alt: "Signature Structural Sweater — green, worn" },
-      { file: "2.jpg", alt: "Signature Structural Sweater — black" },
-      { file: "3.jpg", alt: "Signature Structural Sweater — cream" },
-      { file: "4.jpg", alt: "Signature Structural Sweater — editorial" },
+      { file: "1.jpg", alt: "Signature Structural Sweater, black", color: "Black" },
+      { file: "2.jpg", alt: "Signature Structural Sweater, black, worn" },
+      { file: "3.jpg", alt: "Signature Structural Sweater, cream", color: "Cream" },
+      { file: "4.jpg", alt: "Signature Structural Sweater, olive green", color: "Olive Green" },
+      { file: "5.jpg", alt: "Signature Structural Sweater, olive green, worn" },
+      { file: "6.jpg", alt: "Signature Structural Sweater, burgundy", color: "Burgundy" },
+      { file: "7.jpg", alt: "Signature Structural Sweater, chocolate", color: "Chocolate" },
+      { file: "8.jpg", alt: "Signature Structural Sweater, navy, worn", color: "Navy" },
+      { file: "9.jpg", alt: "Signature Structural Sweater, editorial" },
+      { file: "10.jpg", alt: "Signature Structural Sweater, editorial, Toronto" },
+      { file: "11.jpg", alt: "Signature Structural Sweater, fabric detail" },
     ],
   },
   {
@@ -103,11 +134,13 @@ const productData: ProductDef[] = [
     isTrending: false,
     tagSlugs: ["new-arrivals", "gift-guide"],
     metadata: { material: "100% Brushed Cotton Fleece", care: "Machine wash cold, tumble dry low", origin: "Ceylon" },
+    colors: [{ name: "Cream", hex: "#ece2cf" }],
     images: [
-      { file: "1.jpg", alt: "Signature Lounge Set — cream, worn" },
-      { file: "2.jpg", alt: "Signature Lounge Set — tucked styling" },
-      { file: "3.jpg", alt: "Signature Lounge Set — jacket detail" },
-      { file: "4.jpg", alt: "Signature Lounge Set — trouser detail" },
+      { file: "1.jpg", alt: "Signature Lounge Set, jacket, cream", color: "Cream" },
+      { file: "2.jpg", alt: "Signature Lounge Set, worn" },
+      { file: "3.jpg", alt: "Signature Lounge Set, trouser detail" },
+      { file: "4.jpg", alt: "Signature Lounge Set, styled loose" },
+      { file: "5.jpg", alt: "Signature Lounge Set, styled tucked in" },
     ],
   },
   {
@@ -123,11 +156,22 @@ const productData: ProductDef[] = [
     isTrending: true,
     tagSlugs: ["new-arrivals", "summer-2026"],
     metadata: { material: "100% Cotton Crochet Lace", care: "Hand wash cold, line dry", origin: "Ceylon" },
+    colors: [
+      { name: "White", hex: "#f2efe9" },
+      { name: "Beige", hex: "#cbb190" },
+      { name: "Brown", hex: "#a15b3a" },
+      { name: "Dark Blue", hex: "#3d5568" },
+      { name: "Light Blue", hex: "#9dbccb" },
+    ],
     images: [
-      { file: "1.jpg", alt: "Beach Club Crochet Dress — white" },
-      { file: "2.jpg", alt: "Beach Club Crochet Dress — beige, worn" },
-      { file: "3.jpg", alt: "Beach Club Crochet Dress — dark blue" },
-      { file: "4.jpg", alt: "Beach Club Crochet Dress — light blue" },
+      { file: "1.jpg", alt: "Beach Club Crochet Dress, white", color: "White" },
+      { file: "2.jpg", alt: "Beach Club Crochet Dress, worn, white" },
+      { file: "3.jpg", alt: "Beach Club Crochet Dress, beige", color: "Beige" },
+      { file: "4.jpg", alt: "Beach Club Crochet Dress, brown", color: "Brown" },
+      { file: "5.jpg", alt: "Beach Club Crochet Dress, dark blue", color: "Dark Blue" },
+      { file: "6.jpg", alt: "Beach Club Crochet Dress, light blue", color: "Light Blue" },
+      { file: "7.jpg", alt: "Beach Club Crochet Dress, worn, beige" },
+      { file: "8.jpg", alt: "Beach Club Crochet Dress, worn, white, street" },
     ],
   },
   {
@@ -143,11 +187,19 @@ const productData: ProductDef[] = [
     isTrending: true,
     tagSlugs: ["new-arrivals", "under-500"],
     metadata: { material: "100% Garment-Dyed Cotton Jersey", care: "Machine wash cold inside out, line dry", origin: "Ceylon" },
+    colors: [
+      { name: "Grey", hex: "#4b4750" },
+      { name: "Beige", hex: "#b39a7c" },
+      { name: "Green", hex: "#445d3e" },
+      { name: "Maroon", hex: "#5c2331" },
+    ],
     images: [
-      { file: "1.jpg", alt: "Weekend Oversized Set — grey, flat lay" },
-      { file: "2.jpg", alt: "Weekend Oversized Set — grey, worn" },
-      { file: "3.jpg", alt: "Weekend Oversized Set — beige" },
-      { file: "4.jpg", alt: "Weekend Oversized Set — green" },
+      { file: "1.jpg", alt: "Weekend Oversized Set, grey, flat lay", color: "Grey" },
+      { file: "2.jpg", alt: "Weekend Oversized Set, grey, worn" },
+      { file: "3.jpg", alt: "Weekend Oversized Set, beige", color: "Beige" },
+      { file: "4.jpg", alt: "Weekend Oversized Set, green", color: "Green" },
+      { file: "5.jpg", alt: "Weekend Oversized Set, maroon", color: "Maroon" },
+      { file: "6.jpg", alt: "Weekend Oversized Set, grey, worn, alternate styling" },
     ],
   },
   {
@@ -163,10 +215,14 @@ const productData: ProductDef[] = [
     isTrending: false,
     tagSlugs: ["new-arrivals", "under-500"],
     metadata: { material: "100% Pima Cotton Piqué", care: "Machine wash cold, hang to dry", origin: "Ceylon" },
+    colors: [
+      { name: "White", hex: "#f5f4f0" },
+      { name: "Black", hex: "#232227" },
+    ],
     images: [
-      { file: "1.jpg", alt: "Signature Polo Shirt — white" },
-      { file: "2.jpg", alt: "Signature Polo Shirt — white, worn" },
-      { file: "3.jpg", alt: "Signature Polo Shirt — black, worn" },
+      { file: "1.jpg", alt: "Signature Polo Shirt, white", color: "White" },
+      { file: "2.jpg", alt: "Signature Polo Shirt, white, worn" },
+      { file: "3.jpg", alt: "Signature Polo Shirt, black, worn", color: "Black" },
     ],
   },
   {
@@ -182,11 +238,19 @@ const productData: ProductDef[] = [
     isTrending: false,
     tagSlugs: ["new-arrivals", "gift-guide"],
     metadata: { material: "100% Brushed Cotton Fleece", care: "Machine wash cold, tumble dry low", origin: "Ceylon" },
+    colors: [
+      { name: "Black", hex: "#1c1c1c" },
+      { name: "Green", hex: "#445b3d" },
+      { name: "Maroon", hex: "#6d3a2e" },
+      { name: "White", hex: "#eceae4" },
+    ],
     images: [
-      { file: "1.jpg", alt: "Signature Hoodie — black" },
-      { file: "2.jpg", alt: "Signature Hoodie — green" },
-      { file: "3.jpg", alt: "Signature Hoodie — maroon" },
-      { file: "4.jpg", alt: "Signature Hoodie — white" },
+      { file: "1.jpg", alt: "Signature Hoodie, still life" },
+      { file: "2.jpg", alt: "Signature Hoodie, black, worn", color: "Black" },
+      { file: "3.jpg", alt: "Signature Hoodie, green, worn", color: "Green" },
+      { file: "4.jpg", alt: "Signature Hoodie, maroon, worn", color: "Maroon" },
+      { file: "5.jpg", alt: "Signature Hoodie, white, worn", color: "White" },
+      { file: "6.jpg", alt: "Signature Hoodie, black, worn, alternate" },
     ],
   },
   {
@@ -202,10 +266,15 @@ const productData: ProductDef[] = [
     isTrending: false,
     tagSlugs: ["new-arrivals", "under-500"],
     metadata: { material: "100% Herringbone Cotton", care: "Machine wash cold, hang to dry", origin: "Ceylon" },
+    colors: [
+      { name: "White", hex: "#f5f4f0" },
+      { name: "Green", hex: "#26362b" },
+      { name: "Black", hex: "#1c1c1c" },
+    ],
     images: [
-      { file: "1.jpg", alt: "Woven Pocket Tee — white" },
-      { file: "2.jpg", alt: "Woven Pocket Tee — green" },
-      { file: "3.jpg", alt: "Woven Pocket Tee — black" },
+      { file: "1.jpg", alt: "Woven Pocket Tee, white", color: "White" },
+      { file: "2.jpg", alt: "Woven Pocket Tee, green", color: "Green" },
+      { file: "3.jpg", alt: "Woven Pocket Tee, black", color: "Black" },
     ],
   },
   {
@@ -220,11 +289,17 @@ const productData: ProductDef[] = [
     isTrending: false,
     tagSlugs: ["new-arrivals", "under-500"],
     metadata: { material: "100% Combed Cotton", care: "Machine wash cold, hang to dry", origin: "Ceylon" },
+    colors: [
+      { name: "White", hex: "#f5f4f0" },
+      { name: "Green", hex: "#1f3d2b" },
+      { name: "Black", hex: "#1c1c1c" },
+      { name: "Maroon", hex: "#4e1f28" },
+    ],
     images: [
-      { file: "1.jpg", alt: "Classic Pocket Tee — white" },
-      { file: "2.jpg", alt: "Classic Pocket Tee — green" },
-      { file: "3.jpg", alt: "Classic Pocket Tee — black" },
-      { file: "4.jpg", alt: "Classic Pocket Tee — maroon" },
+      { file: "1.jpg", alt: "Classic Pocket Tee, white", color: "White" },
+      { file: "2.jpg", alt: "Classic Pocket Tee, green", color: "Green" },
+      { file: "3.jpg", alt: "Classic Pocket Tee, black", color: "Black" },
+      { file: "4.jpg", alt: "Classic Pocket Tee, maroon", color: "Maroon" },
     ],
   },
   {
@@ -240,7 +315,8 @@ const productData: ProductDef[] = [
     isTrending: false,
     tagSlugs: ["new-arrivals", "under-500"],
     metadata: { material: "100% Combed Cotton", care: "Machine wash cold, hang to dry", origin: "Ceylon" },
-    images: [{ file: "1.jpg", alt: "Essential Crew Tee — white" }],
+    colors: [{ name: "White", hex: "#f5f4f0" }],
+    images: [{ file: "1.jpg", alt: "Essential Crew Tee, white", color: "White" }],
   },
   {
     slug: "ceylon-logo-tee",
@@ -255,12 +331,19 @@ const productData: ProductDef[] = [
     isTrending: true,
     tagSlugs: ["new-arrivals", "under-500"],
     metadata: { material: "100% Combed Cotton", care: "Machine wash cold, hang to dry", origin: "Ceylon" },
+    colors: [
+      { name: "White", hex: "#f5f4f0" },
+      { name: "Black", hex: "#1a1a1a" },
+      { name: "Green", hex: "#1f3a26" },
+      { name: "Maroon", hex: "#4a1e26" },
+    ],
     images: [
-      { file: "1.jpg", alt: "Ceylon Logo Tee — white" },
-      { file: "2.jpg", alt: "Ceylon Logo Tee — black" },
-      { file: "3.jpg", alt: "Ceylon Logo Tee — green" },
-      { file: "4.jpg", alt: "Ceylon Logo Tee — maroon" },
-      { file: "5.jpg", alt: "Ceylon Logo Tee — black, worn" },
+      { file: "1.jpg", alt: "Ceylon Logo Tee, white", color: "White" },
+      { file: "2.jpg", alt: "Ceylon Logo Tee, black, worn" },
+      { file: "3.jpg", alt: "Ceylon Logo Tee, black", color: "Black" },
+      { file: "4.jpg", alt: "Ceylon Logo Tee, green", color: "Green" },
+      { file: "5.jpg", alt: "Ceylon Logo Tee, maroon", color: "Maroon" },
+      { file: "6.jpg", alt: "Ceylon Logo Tee, editorial" },
     ],
   },
 ];
@@ -352,19 +435,25 @@ async function seed() {
         alt: img.alt,
         position: i,
         isPrimary: i === 0,
+        color: img.color ?? null,
       })),
     );
 
     const sizes = ["XS", "S", "M", "L", "XL"];
+    const colorSlug = (name: string) => name.toLowerCase().replace(/\s+/g, "-");
     await db.insert(productVariants).values(
-      sizes.map((size, i) => ({
-        productId: inserted.id,
-        sku: `${p.slug}-${size.toLowerCase()}`,
-        size,
-        priceCents: p.basePriceCents,
-        stockQuantity: i === 1 ? 2 : Math.floor(Math.random() * 12) + 4,
-        isActive: true,
-      })),
+      p.colors.flatMap((c) =>
+        sizes.map((size, i) => ({
+          productId: inserted.id,
+          sku: `${p.slug}-${size.toLowerCase()}-${colorSlug(c.name)}`,
+          size,
+          color: c.name,
+          colorHex: c.hex,
+          priceCents: p.basePriceCents,
+          stockQuantity: i === 1 ? 2 : Math.floor(Math.random() * 12) + 4,
+          isActive: true,
+        })),
+      ),
     );
 
     for (const tagSlug of p.tagSlugs) {
@@ -376,8 +465,18 @@ async function seed() {
       }
     }
 
-    console.log(`  ${p.name} (${p.images.length} images, 5 variants)`);
+    console.log(`  ${p.name} (${p.images.length} images, ${p.colors.length * sizes.length} variants)`);
   }
+
+  // ── Shop now shows only these 12 products — deactivate every other product
+  // (soft delete via is_active=false; preserves order history / FK integrity).
+  const keepSlugs = productData.map((p) => p.slug);
+  const deactivated = await db
+    .update(products)
+    .set({ isActive: false, updatedAt: new Date() })
+    .where(notInArray(products.slug, keepSlugs))
+    .returning({ slug: products.slug });
+  console.log(`${deactivated.length} other products deactivated (removed from shop).`);
 
   console.log(`${productData.length} new-arrival products seeded.`);
   await pool.end();

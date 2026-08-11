@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, lte, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lte, ne, notInArray, sql } from "drizzle-orm";
 import { db } from "../client";
 import {
   categories,
@@ -26,6 +26,7 @@ export interface ProductFilters {
 export interface CardVariant {
   id: string;
   size: string | null;
+  color: string | null;
   stockQuantity: number;
   priceCents: number;
 }
@@ -75,6 +76,7 @@ async function attachVariants<T extends { id: string }>(rows: T[]) {
       productId: productVariants.productId,
       id: productVariants.id,
       size: productVariants.size,
+      color: productVariants.color,
       stockQuantity: productVariants.stockQuantity,
       priceCents: productVariants.priceCents,
     })
@@ -84,7 +86,7 @@ async function attachVariants<T extends { id: string }>(rows: T[]) {
   const byProduct = new Map<string, CardVariant[]>();
   for (const v of variantRows) {
     const arr = byProduct.get(v.productId) ?? [];
-    arr.push({ id: v.id, size: v.size, stockQuantity: v.stockQuantity, priceCents: v.priceCents });
+    arr.push({ id: v.id, size: v.size, color: v.color, stockQuantity: v.stockQuantity, priceCents: v.priceCents });
     byProduct.set(v.productId, arr);
   }
   return rows.map((r) => ({ ...r, variants: byProduct.get(r.id) ?? [] }));
@@ -265,18 +267,42 @@ export async function getFeaturedProducts(limit = 8) {
   return attachColors(await attachVariants(await attachImages(rows)));
 }
 
+// Trending products first, backfilled with the newest other active products
+// so the homepage Store grid always shows a full `limit` tiles even when
+// fewer than `limit` products happen to be flagged trending.
 export async function getTrendingProducts(limit = 8) {
-  const rows = await db
-    .select({
-      id: products.id,
-      slug: products.slug,
-      name: products.name,
-      basePriceCents: products.basePriceCents,
-      compareAtPriceCents: products.compareAtPriceCents,
-    })
+  const selectCols = {
+    id: products.id,
+    slug: products.slug,
+    name: products.name,
+    basePriceCents: products.basePriceCents,
+    compareAtPriceCents: products.compareAtPriceCents,
+  };
+
+  const trending = await db
+    .select(selectCols)
     .from(products)
     .where(and(eq(products.isActive, true), eq(products.isTrending, true)))
+    .orderBy(desc(products.createdAt))
     .limit(limit);
+
+  let rows = trending;
+  if (trending.length < limit) {
+    const excludeIds = trending.map((p) => p.id);
+    const backfill = await db
+      .select(selectCols)
+      .from(products)
+      .where(
+        and(
+          eq(products.isActive, true),
+          excludeIds.length ? notInArray(products.id, excludeIds) : undefined,
+        ),
+      )
+      .orderBy(desc(products.createdAt))
+      .limit(limit - trending.length);
+    rows = [...trending, ...backfill];
+  }
+
   return attachColors(await attachVariants(await attachImages(rows)));
 }
 

@@ -1,11 +1,20 @@
 # Arachchi - Current Progress
 
-_Last updated: 2026-08-10, Toronto local time_
+_Last updated: 2026-08-11, Toronto local time_
 
 ## Current Phase
 Phase 7 (SEO, performance, security) — complete. Phase 8 is pre-launch ops only.
 
 ## Completed
+
+### Real catalog photography, hover interactions, Philosophy copy cleanup (2026-08-11) — FINALISED
+- **Philosophy page** (`app/(storefront)/about/page.tsx`): all em dashes removed from title/meta/alt/body copy, rephrased around them
+- **Catalog replaced with real photography**: the client's photos (`Zip file to send to sl/`) were catalogued and matched onto the 12 existing "new arrival" products (same names/prices/descriptions). New `scripts/process-new-arrival-photos.ts` compresses the source PNGs (sharp) into `public/images/products/<slug>/`. `scripts/seed-new-arrivals.ts` reworked to carry a real `colors` array per product (1-6 colorways each, varies by what was actually photographed) driving size×color variant generation, and tags each image's `color` field for the swatch feature. First image per product is always a non-worn flat/ghost-mannequin shot; second is a worn/lifestyle shot (where photography allows)
+- The other 14 catalog products (everything not among the 12 new arrivals) are now soft-deleted (`is_active = false`) by the same script, so shop/homepage show only the 12 real products
+- **Needs re-running against any other environment's DB** (staging/production): `npx tsx scripts/seed-new-arrivals.ts` (image files must also be present in `public/images/products/`, or re-run `npx tsx scripts/process-new-arrival-photos.ts` first if the source zip is available there)
+- **ProductCard** (`components/product/ProductCard.tsx`): color swatches now preview on hover instead of requiring a click (click-to-select retained for touch devices); swatch hover takes priority over the existing worn-image card-hover crossfade
+- One known photography gap: the flat/ghost-mannequin shots for `ceylon-puff-sleeve-dress` and `tiered-linen-midi-dress` have an illegible/garbled neck-tag mockup label (not "arachchi") — small and likely unnoticeable at thumbnail size, but flagged for a future re-shoot before launch
+- Build: `npx tsc --noEmit` 0 errors, `npx eslint` clean on changed files, `npx next build` clean; hover behavior (worn-image crossfade, color-swatch live preview, revert-on-leave) smoke-tested in dev browser on the shop grid
 
 ### Static hero + Store grid, Lookbook/Journal removed, shop card color swatches (2026-08-10) — FINALISED
 - **Hero**: single static slide (no carousel, no autoplay, no arrows/dots); "season" label line removed entirely
@@ -114,6 +123,7 @@ Phase 7 (SEO, performance, security) — complete. Phase 8 is pre-launch ops onl
 - Add public SELECT RLS policies on read-only tables (see below)
 - Run `npx tsx scripts/seed-new-arrivals.ts` against any other environment's DB (staging/production) to bring the 12 new-arrival products seeded 2026-07-10 in sync — it was only run against local dev so far
 - Run `npx tsx scripts/seed-colors.ts` against any other environment's DB to bring the trending flags + color variants seeded 2026-08-10 in sync — it was only run against local dev so far
+- Run `npx tsx scripts/seed-new-arrivals.ts` against any other environment's DB to bring the real photography + colors + the 14-product deactivation (2026-08-11) in sync — it was only run against local dev so far
 
 ## RLS Policies Required (run in Supabase SQL Editor)
 ```sql

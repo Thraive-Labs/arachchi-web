@@ -43,3 +43,6 @@ yarn-error.log*
 /coverage
 /test-results
 /playwright-report
+
+# Raw client photo drops (processed into public/images/products/ via scripts/process-new-arrival-photos.ts)
+/Zip file to send to sl/
