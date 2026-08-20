@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const hero = {
-  image: "/images/img1.png",
+  image: "/images/hero.jpg",
   headline: ["Less,", "considered", "more."],
   cta: { label: "View the Store", href: "/shop" },
 };
